@@ -4,7 +4,7 @@
 // ============================================
 import React, { useState } from 'react';
 import LoginPage from './components/LoginPage';
-import PlaneOsb from './components/PlaneOsb';
+import HomePage from './components/HomePage';
 import BookFlightPage from './components/BookFlightPage';
 import RewardsPage from './components/RewardsPage';
 import TransactionsPage from './components/TransactionsPage';
@@ -40,11 +40,11 @@ function App() {
   ]);
 
   const [flights] = useState([
-    { id: 'FL001', from: 'New York', to: 'Los Angeles', price: 350, points: 500, duration: '5h 30m', aircraft: 'Boeing 737' },
-    { id: 'FL002', from: 'New York', to: 'London', price: 650, points: 900, duration: '7h 15m', aircraft: 'Airbus A380' },
-    { id: 'FL003', from: 'Los Angeles', to: 'Tokyo', price: 800, points: 1200, duration: '11h 45m', aircraft: 'Boeing 787' },
-    { id: 'FL004', from: 'London', to: 'Paris', price: 150, points: 200, duration: '1h 15m', aircraft: 'Airbus A320' },
-    { id: 'FL005', from: 'Tokyo', to: 'Singapore', price: 450, points: 650, duration: '6h 30m', aircraft: 'Boeing 777' },
+    { id: 'FL001', from: 'New York', to: 'Los Angeles', price: 350, flightnumber: 500, duration: '5h 30m', aircraft: 'Boeing 737' },
+    { id: 'FL002', from: 'New York', to: 'London', price: 650, flightnumber: 900, duration: '7h 15m', aircraft: 'Airbus A380' },
+    { id: 'FL003', from: 'Los Angeles', to: 'Tokyo', price: 800, flightnumber: 1200, duration: '11h 45m', aircraft: 'Boeing 787' },
+    { id: 'FL004', from: 'London', to: 'Paris', price: 150, flightnumber: 200, duration: '1h 15m', aircraft: 'Airbus A320' },
+    { id: 'FL005', from: 'Tokyo', to: 'Singapore', price: 450, flightnumber: 650, duration: '6h 30m', aircraft: 'Boeing 777' },
   ]);
 
   const [rewardItems] = useState([
@@ -109,7 +109,7 @@ function App() {
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-6">
           {currentPage === 'home' && (
-            <PlaneOsb 
+            <HomePage 
               user={currentUser}
               onNavigate={setCurrentPage}
             />
