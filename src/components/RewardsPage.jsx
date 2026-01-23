@@ -1,8 +1,9 @@
 import React from 'react';
 import { Award } from 'lucide-react';
 import { getTierColor } from '../utils/helpers';
+import {purchaseItem} from '../utils/fetch.js';
 
-function RewardsPage({ user, rewardItems, updateUser, addTransaction }) {
+function RewardsPage({ user, rewardItems, updateUser}) {
   const handleRedeemItem = (item) => {
     if (user.points_balance >= item.points) {
       const tierOrder = ['Silver', 'Gold', 'Platinum'];
@@ -22,7 +23,7 @@ function RewardsPage({ user, rewardItems, updateUser, addTransaction }) {
           date: new Date().toISOString().split('T')[0],
           amount: 0
         };
-        addTransaction(newTransaction);
+        purchaseItem(newTransaction) ;
         alert(`${item.name} redeemed successfully!`);
       } else {
         alert(`This reward requires ${item.tier} tier or higher!`);

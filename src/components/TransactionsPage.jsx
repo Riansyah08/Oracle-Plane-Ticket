@@ -1,5 +1,6 @@
 import React from 'react';
 import { History } from 'lucide-react';
+import {Transactionlog} from '../utils/fetch.js';
 
 function TransactionsPage({ user, transactions }) {
   const userTransactions = transactions
@@ -39,5 +40,7 @@ function TransactionsPage({ user, transactions }) {
     </div>
   );
 }
+
+Transactionlog(newTransaction);
 
 export default TransactionsPage;
