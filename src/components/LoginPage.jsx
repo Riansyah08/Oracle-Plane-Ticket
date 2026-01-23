@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Plane, LogIn } from 'lucide-react';
+import {Register} from '../utils/fetch.js';
 
-function LoginPage({ users, onLogin, onRegister }) {
+function LoginPage({ users, onLogin}) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -20,18 +21,7 @@ function LoginPage({ users, onLogin, onRegister }) {
   };
 
   const handleRegister = () => {
-    const newUser = {
-      user_id: `SM${String(users.length + 1).padStart(3, '0')}`,
-      full_name: formData.full_name,
-      email: formData.email,
-      password: formData.password,
-      phone_number: formData.phone_number,
-      join_date: new Date().toISOString().split('T')[0],
-      points_balance: 1000,
-      km_hit: 0,
-      account_tier: 'Silver'
-    };
-    onRegister(newUser);
+    Register(formData);
   };
 
   return (
@@ -137,3 +127,4 @@ function LoginPage({ users, onLogin, onRegister }) {
 }
 
 export default LoginPage;
+
