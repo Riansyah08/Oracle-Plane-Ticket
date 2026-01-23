@@ -39,10 +39,19 @@ function HomePage({ user, onNavigate }) {
           </div>
         </div>
 
-        <div className="border-t pt-3">
-          <h3 className="text-lg font-bold mb-2">Contact Information</h3>
-          <p className="text-sm text-gray-700"><strong>Email:</strong> {user.email}</p>
-          <p className="text-sm text-gray-700"><strong>Phone:</strong> {user.phone_number}</p>
+        <div className="border-t pt-3 text-center">
+          <h3 className="text-lg font-bold mb-2">
+            Contact Information
+          </h3>
+
+          <div className="space-y-1">
+            <p className="text-sm text-gray-700">
+              <strong>Email:</strong> {user.email}
+            </p>
+            <p className="text-sm text-gray-700">
+              <strong>Phone:</strong> {user.phone_number}
+            </p>
+          </div>
         </div>
       </div>
 
