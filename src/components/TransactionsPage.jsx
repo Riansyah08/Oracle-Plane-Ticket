@@ -40,7 +40,4 @@ function TransactionsPage({ user, transactions }) {
     </div>
   );
 }
-
-Transactionlog(newTransaction);
-
 export default TransactionsPage;

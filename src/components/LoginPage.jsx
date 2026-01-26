@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Plane, LogIn } from 'lucide-react';
-import {Register} from '../utils/fetch.js';
+import { Register, Transactionlog } from '../utils/fetch.js';
 
-function LoginPage({ users, onLogin}) {
+function LoginPage({ users, onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -11,17 +11,45 @@ function LoginPage({ users, onLogin}) {
     phone_number: ''
   });
 
-  const handleLogin = () => {
-    const user = users.find(u => u.email === formData.email && u.password === formData.password);
-    if (user) {
-      onLogin(user);
-    } else {
+  /* ================= LOGIN ================= */
+  const handleLogin = async () => {
+    const user = users.find(
+      u => u.email === formData.email && u.password === formData.password
+    );
+
+    if (!user) {
       alert('Invalid credentials');
+      return;
     }
+
+    // 🔹 Fetch transaction log from backend
+    await Transactionlog({
+      UserAccID: user.user_id,
+      email: user.email
+    });
+
+    onLogin(user);
   };
 
-  const handleRegister = () => {
-    Register(formData);
+  /* ================= REGISTER ================= */
+  const handleRegister = async () => {
+    await Register(formData);
+
+    // 🔹 User should now exist in backend / users list
+    const newUser = users.find(u => u.email === formData.email);
+
+    if (!newUser) {
+      alert('Registration failed');
+      return;
+    }
+
+    // 🔹 Fetch transaction log after register
+    await Transactionlog({
+      UserAccID: newUser.user_id,
+      email: newUser.email
+    });
+
+    onLogin(newUser);
   };
 
   return (
@@ -31,7 +59,7 @@ function LoginPage({ users, onLogin}) {
           <Plane className="w-12 h-12 text-blue-600 mr-3" />
           <h1 className="text-3xl font-bold text-gray-800">OracleSky</h1>
         </div>
-        
+
         <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
           <button
             className={`flex-1 py-2 rounded-lg transition ${isLogin ? 'bg-white shadow' : ''}`}
@@ -55,7 +83,7 @@ function LoginPage({ users, onLogin}) {
                 type="email"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
             <div className="mb-6">
@@ -64,7 +92,7 @@ function LoginPage({ users, onLogin}) {
                 type="password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
             <button
@@ -83,7 +111,7 @@ function LoginPage({ users, onLogin}) {
                 type="text"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.full_name}
-                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               />
             </div>
             <div className="mb-4">
@@ -92,7 +120,7 @@ function LoginPage({ users, onLogin}) {
                 type="email"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
             <div className="mb-4">
@@ -101,7 +129,7 @@ function LoginPage({ users, onLogin}) {
                 type="tel"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.phone_number}
-                onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
               />
             </div>
             <div className="mb-6">
@@ -110,7 +138,7 @@ function LoginPage({ users, onLogin}) {
                 type="password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
             <button
@@ -127,4 +155,3 @@ function LoginPage({ users, onLogin}) {
 }
 
 export default LoginPage;
-
