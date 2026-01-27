@@ -8,10 +8,10 @@ export function Register(formData) {
   <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
     <Status_Code></Status_Code>
     <ns2:TransactionLogDisplayRq>
-    <ns2:TransactionLogDisplayRq>
       <ns2:UserAccID></ns2:UserAccID>
       <ns2:Email></ns2:Email>
     </ns2:TransactionLogDisplayRq>
+    <ns2:UserInsertRq>
     <ns2:FullName>${formData.full_name}</ns2:FullName>
       <ns2:PasswordHash>${formData.password}</ns2:PasswordHash>
       <ns2:PhoneNum>${formData.phone_number}</ns2:PhoneNum>
@@ -40,11 +40,12 @@ export function Register(formData) {
 `;
 
   return fetch(BPM_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/xml",
-      "Accept": "application/xml"
-    },
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml; charset=utf-8",
+    "Accept": "text/xml",
+    "SOAPAction": "start"
+  },
     body: payloadRegis
       })
         .then(response => {
@@ -80,6 +81,7 @@ export function purchaseItem(newTransaction) {
       <ns2:UserAccID></ns2:UserAccID>
       <ns2:Email></ns2:Email>
     </ns2:TransactionLogDisplayRq>
+    </ns2:UserInsertRq>
     <ns2:FullName></ns2:FullName>
       <ns2:PasswordHash></ns2:PasswordHash>
       <ns2:PhoneNum></ns2:PhoneNum>
@@ -108,11 +110,12 @@ export function purchaseItem(newTransaction) {
 `;
 
   return fetch(BPM_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/xml",
-      "Accept": "text/xml"
-    },  
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml; charset=utf-8",
+    "Accept": "text/xml",
+    "SOAPAction": "start"
+  },  
     body: payloadItems
   })
         .then(response => {
@@ -149,6 +152,7 @@ export function purchasePlane(newTransaction) {
       <ns2:Email></ns2:Email>
     </ns2:TransactionLogDisplayRq>
     <ns2:FullName></ns2:FullName>
+    </ns2:UserInsertRq>
       <ns2:PasswordHash></ns2:PasswordHash>
       <ns2:PhoneNum></ns2:PhoneNum>
       <ns2:PointsBalance></ns2:PointsBalance>
@@ -176,11 +180,12 @@ export function purchasePlane(newTransaction) {
 `;
 
   return fetch(BPM_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/xml",
-      "Accept": "text/xml"
-    },
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml; charset=utf-8",
+    "Accept": "text/xml",
+    "SOAPAction": "start"
+  },
     body: payloadPlane
  })
         .then(response => {
@@ -217,13 +222,14 @@ export function Transactionlog(newTransaction) {
       <ns2:Email>${newTransaction.email}</ns2:Email>
     </ns2:TransactionLogDisplayRq>
     <ns2:FullName></ns2:FullName>
+    </ns2:UserInsertRq>
       <ns2:PasswordHash></ns2:PasswordHash>
       <ns2:PhoneNum></ns2:PhoneNum>
       <ns2:PointsBalance></ns2:PointsBalance>
       <ns2:Email></ns2:Email>
       <ns2:TierID></ns2:TierID>
       <ns2:KmHit></ns2:KmHit>
-    </ns2:UserInsertq>
+    </ns2:UserInserRq>
     <ns2:PointRedeemRq>
       <ns2:UserAccID></ns2:UserAccID>
       <ns2:Email></ns2:Email>
@@ -244,11 +250,12 @@ export function Transactionlog(newTransaction) {
 `;
 
   return fetch(BPM_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/xml",
-      "Accept": "application/xml"
-    },
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml; charset=utf-8",
+    "Accept": "text/xml",
+    "SOAPAction": "start"
+  },
     body: payloadLog
   })
         .then(response => {

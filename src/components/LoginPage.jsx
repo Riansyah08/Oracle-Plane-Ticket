@@ -35,7 +35,7 @@ function LoginPage({ users, onLogin }) {
   const handleRegister = async () => {
     await Register(formData);
 
-    // 🔹 User should now exist in backend / users list
+    // User should now exist in backend / users list
     const newUser = users.find(u => u.email === formData.email);
 
     if (!newUser) {
@@ -78,7 +78,7 @@ function LoginPage({ users, onLogin }) {
         {isLogin ? (
           <div>
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Email</label>
+              <label className="block text-gray-700 mb-2">User ID</label>
               <input
                 type="email"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -87,7 +87,7 @@ function LoginPage({ users, onLogin }) {
               />
             </div>
             <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Password</label>
+              <label className="block text-gray-700 mb-2">Email</label>
               <input
                 type="password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
