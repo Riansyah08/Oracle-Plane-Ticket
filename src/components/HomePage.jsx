@@ -18,8 +18,8 @@ function HomePage({ user, onNavigate }) {
           </div>
           <div className="bg-green-50 p-3 rounded-lg">
             <p className="text-sm text-gray-600">Account Tier</p>
-            <p className={`text-xl font-bold ${getTierColor(user.account_tier)}`}>
-              {user.account_tier}
+            <p className={`text-xl font-bold ${getTierColor(user.tier_name)}`}>
+              {user.tier_name}
             </p>
           </div>
         </div>

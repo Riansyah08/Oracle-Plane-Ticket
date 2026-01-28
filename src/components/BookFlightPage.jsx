@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
+import {purchasePlane} from '../utils/fetch.js';
 
 function BookFlightPage({ user, flights, updateUser, addTransaction }) {
   const [selectedFrom, setSelectedFrom] = useState('');
@@ -15,30 +16,35 @@ function BookFlightPage({ user, flights, updateUser, addTransaction }) {
     }
   };
 
-  const handlePurchaseFlight = (flight) => {
-    if (user.points_balance >= flight.points) {
-      const updatedUser = {
-        ...user,
-        points_balance: user.points_balance - flight.points,
-        km_hit: user.km_hit + 5000
-      };
-      updateUser(updatedUser);
-      
-      const newTransaction = {
-        id: `T${String(Math.random()).substring(2, 8)}`,
-        user_id: user.user_id,
-        type: 'Flight Purchase',
-        description: `${flight.id} - ${flight.from} to ${flight.to}`,
-        points: -flight.points,
-        date: new Date().toISOString().split('T')[0],
-        amount: flight.price
-      };
-      addTransaction(newTransaction);
-      alert(`Flight purchased successfully! ${flight.points} points deducted.`);
-    } else {
-      alert('Insufficient points balance!');
-    }
-  };
+ const handlePurchaseFlight = async (flight) => {
+  if (user.points_balance >= flight.points) {
+    const updatedUser = {
+      ...user,
+      points_balance: user.points_balance - flight.points,
+      km_hit: user.km_hit + 5000, 
+    };
+
+    updateUser(updatedUser);
+
+    const newTransaction = {
+      id: `T${String(Math.random()).substring(2, 8)}`,
+      user_id: user.user_id,
+      type: 'Flight Purchase',
+      description: `${flight.id} - ${flight.from} to ${flight.to}`,
+      points: -flight.points,
+      date: new Date().toISOString().split('T')[0],
+      amount: flight.price,
+    };
+
+    // POST request handled here
+    await purchasePlane(newTransaction);
+
+    alert(`Flight purchased successfully! ${flight.points} points deducted.`);
+  } else {
+    alert('Insufficient points balance!');
+  }
+};
+
 
   return (
     <div className="max-w-4xl mx-auto">

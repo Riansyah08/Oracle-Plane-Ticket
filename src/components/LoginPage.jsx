@@ -1,60 +1,63 @@
-import React, { useState } from 'react';
-import { Plane, LogIn } from 'lucide-react';
-import { Register, Transactionlog } from '../utils/fetch.js';
+import React, { useState } from "react";
+import { Plane, LogIn } from "lucide-react";
+import { Register, loginUser } from "../utils/fetch";
 
-function LoginPage({ users, onLogin }) {
+function LoginPage({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    full_name: '',
-    phone_number: ''
+    userAccID: "",
+    email: "",
+    password: "",
+    full_name: "",
+    phone_number: ""
   });
 
   /* ================= LOGIN ================= */
   const handleLogin = async () => {
-    const user = users.find(
-      u => u.email === formData.email && u.password === formData.password
-    );
+    setLoading(true);
+    try {
+      const user = await loginUser({
+        userAccID: formData.userAccID,
+        email: formData.email
+      });
 
-    if (!user) {
-      alert('Invalid credentials');
-      return;
+      if (!user) {
+        alert("User not found");
+        return;
+      }
+
+      // 🔹 LoginPage does NOT care how transactions are fetched
+      onLogin(user);
+
+    } catch (err) {
+      console.error(err);
+      alert("Login failed");
+    } finally {
+      setLoading(false);
     }
-
-    // 🔹 Fetch transaction log from backend
-    await Transactionlog({
-      UserAccID: user.user_id,
-      email: user.email
-    });
-
-    onLogin(user);
   };
 
   /* ================= REGISTER ================= */
   const handleRegister = async () => {
-    await Register(formData);
-
-    // User should now exist in backend / users list
-    const newUser = users.find(u => u.email === formData.email);
-
-    if (!newUser) {
-      alert('Registration failed');
-      return;
+    setLoading(true);
+    try {
+      await Register(formData);
+      alert("Registration successful. Please login.");
+      setIsLogin(true);
+    } catch (err) {
+      console.error(err);
+      alert("Registration failed");
+    } finally {
+      setLoading(false);
     }
-
-    // 🔹 Fetch transaction log after register
-    await Transactionlog({
-      UserAccID: newUser.user_id,
-      email: newUser.email
-    });
-
-    onLogin(newUser);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+
         <div className="flex items-center justify-center mb-6">
           <Plane className="w-12 h-12 text-blue-600 mr-3" />
           <h1 className="text-3xl font-bold text-gray-800">OracleSky</h1>
@@ -62,13 +65,17 @@ function LoginPage({ users, onLogin }) {
 
         <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
           <button
-            className={`flex-1 py-2 rounded-lg transition ${isLogin ? 'bg-white shadow' : ''}`}
+            className={`flex-1 py-2 rounded-lg transition ${
+              isLogin ? "bg-white shadow" : ""
+            }`}
             onClick={() => setIsLogin(true)}
           >
             Login
           </button>
           <button
-            className={`flex-1 py-2 rounded-lg transition ${!isLogin ? 'bg-white shadow' : ''}`}
+            className={`flex-1 py-2 rounded-lg transition ${
+              !isLogin ? "bg-white shadow" : ""
+            }`}
             onClick={() => setIsLogin(false)}
           >
             Register
@@ -76,80 +83,81 @@ function LoginPage({ users, onLogin }) {
         </div>
 
         {isLogin ? (
-          <div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">User ID</label>
-              <input
-                type="email"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Email</label>
-              <input
-                type="password"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              />
-            </div>
+          <>
+            <Input
+              label="User Account ID"
+              value={formData.userAccID}
+              onChange={v => setFormData({ ...formData, userAccID: v })}
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={v => setFormData({ ...formData, email: v })}
+            />
+
             <button
               onClick={handleLogin}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center"
             >
               <LogIn className="w-5 h-5 mr-2" />
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
-          </div>
+          </>
         ) : (
-          <div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Phone Number</label>
-              <input
-                type="tel"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.phone_number}
-                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              />
-            </div>
+          <>
+            <Input
+              label="Full Name"
+              value={formData.full_name}
+              onChange={v => setFormData({ ...formData, full_name: v })}
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={v => setFormData({ ...formData, email: v })}
+            />
+
+            <Input
+              label="Phone Number"
+              value={formData.phone_number}
+              onChange={v => setFormData({ ...formData, phone_number: v })}
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              value={formData.password}
+              onChange={v => setFormData({ ...formData, password: v })}
+            />
+
             <button
               onClick={handleRegister}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
-          </div>
+          </>
         )}
       </div>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange, type = "text" }) {
+  return (
+    <div className="mb-4">
+      <label className="block text-gray-700 mb-2">{label}</label>
+      <input
+        type={type}
+        className="w-full px-4 py-2 border rounded-lg"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      />
     </div>
   );
 }

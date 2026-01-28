@@ -1,5 +1,113 @@
 const BPM_URL = "/soa-infra/services/default/BpmProject/MainProccess.service";
 
+// Login logic payload fetching 
+export function loginUser(formData) {
+  const payloadlogin = `
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+<soap:Body>  
+  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
+    <Status_Code></Status_Code>
+    <ns2:TransactionLogDisplayRq>
+      <ns2:UserAccID></ns2:UserAccID>
+      <ns2:Email></ns2:Email>
+    </ns2:TransactionLogDisplayRq>
+    <ns2:UserInsertRq>
+    <ns2:FullName></ns2:FullName>
+      <ns2:PasswordHash></ns2:PasswordHash>
+      <ns2:PhoneNum></ns2:PhoneNum>
+      <ns2:PointsBalance>0</ns2:PointsBalance>
+      <ns2:Email></ns2:Email>
+      <ns2:TierID>T1</ns2:TierID>
+      <ns2:KmHit>0</ns2:KmHit>
+    </ns2:UserInsertRq>
+    <ns2:PointRedeemRq>
+      <ns2:UserAccID></ns2:UserAccID>
+      <ns2:Email></ns2:Email>
+      <ns2:ItemId></ns2:ItemId>
+      <ns2:Amount></ns2:Amount>
+    </ns2:PointRedeemRq>
+    <ns2:UserInformationRq>
+      <ns2:UserAccID></ns2:UserAccID>
+      <ns2:Email></ns2:Email>
+      <ns2:planeAddressFrom></ns2:planeAddressFrom>
+      <ns2:planeAddressTo></ns2:planeAddressTo>
+      <ns2:planeSeat></ns2:planeSeat>
+    </ns2:UserInformationRq>
+    <user_options>Login</user_options>
+     <ns2:UserSelectRq>
+      <ns2:UserAccID>${formData.userAccID}</ns2:UserAccID>
+      <ns2:Email>${formData.email}</ns2:Email>
+    </ns2:UserSelectRq>
+  </ns1:start>
+</soap:Body>
+</soap:Envelope>
+`;
+
+return fetch(BPM_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml; charset=utf-8",
+    "Accept": "text/xml",
+    "SOAPAction": "start"
+  },
+  body: payloadlogin
+})
+    .then(res => res.text()) // 🔥 ALWAYS read body
+    .then(xmlText => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+      const userNode =
+        xmlDoc.getElementsByTagNameNS("*", "UserSelectRs")[0];
+
+      if (!userNode) {
+        throw new Error("Invalid SOAP response");
+      }
+
+      const statusCode =
+  userNode.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
+
+if (statusCode !== "00") {
+  const statusDesc =
+    userNode.getElementsByTagNameNS("*", "StatusDesc")[0]?.textContent;
+  throw new Error(statusDesc || "Login failed");
+}
+
+const returnedUserId =
+  userNode.getElementsByTagNameNS("*", "UserAccID")[0]?.textContent;
+
+const returnedEmail =
+  userNode.getElementsByTagNameNS("*", "Email")[0]?.textContent;
+
+// 🔴 CRITICAL MATCH CHECK
+if (
+  !returnedUserId ||
+  !returnedEmail ||
+  String(returnedUserId) !== String(formData.userAccID) ||
+  returnedEmail !== formData.email
+) {
+  throw new Error("Invalid User ID or Email");
+}
+      // ✅ SUCCESS
+      return {
+        user_id: userNode.getElementsByTagNameNS("*", "UserAccID")[0]?.textContent,
+        full_name: userNode.getElementsByTagNameNS("*", "FullName")[0]?.textContent,
+        email: userNode.getElementsByTagNameNS("*", "Email")[0]?.textContent,
+        phone_number: userNode.getElementsByTagNameNS("*", "PhoneNum")[0]?.textContent,
+        join_date: userNode.getElementsByTagNameNS("*", "JoinDate")[0]?.textContent,
+        points_balance: Number(
+          userNode.getElementsByTagNameNS("*", "PointsBalance")[0]?.textContent || 0
+        ),
+        km_hit: Number(
+          userNode.getElementsByTagNameNS("*", "KmHit")[0]?.textContent || 0
+        ),
+        tier_id: userNode.getElementsByTagNameNS("*", "TierID")[0]?.textContent,
+        tier_name: userNode.getElementsByTagNameNS("*", "TierName")[0]?.textContent
+      };
+    });
+}
+
+
 /* ================= REGISTER ================= */
 export function Register(formData) {
   const payloadRegis = `
@@ -211,25 +319,25 @@ export function purchasePlane(newTransaction) {
 }
 
 /* ================= TRANSACTION LOG ================= */
-export function Transactionlog(newTransaction) {
+export function Transactionlog({ email, userAccID }) {
   const payloadLog = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-<soap:Body>
+<soap:Body>  
   <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
-    <Status_Code/>
+    <Status_Code></Status_Code>
     <ns2:TransactionLogDisplayRq>
-      <ns2:UserAccID>${newTransaction.UserAccID}</ns2:UserAccID>
-      <ns2:Email>${newTransaction.email}</ns2:Email>
+      <ns2:UserAccID>${userAccID}</ns2:UserAccID>
+      <ns2:Email>${email}</ns2:Email>
     </ns2:TransactionLogDisplayRq>
+    <ns2:UserInsertRq>
     <ns2:FullName></ns2:FullName>
-    </ns2:UserInsertRq>
       <ns2:PasswordHash></ns2:PasswordHash>
       <ns2:PhoneNum></ns2:PhoneNum>
       <ns2:PointsBalance></ns2:PointsBalance>
       <ns2:Email></ns2:Email>
       <ns2:TierID></ns2:TierID>
       <ns2:KmHit></ns2:KmHit>
-    </ns2:UserInserRq>
+    </ns2:UserInsertRq>
     <ns2:PointRedeemRq>
       <ns2:UserAccID></ns2:UserAccID>
       <ns2:Email></ns2:Email>
@@ -250,33 +358,66 @@ export function Transactionlog(newTransaction) {
 `;
 
   return fetch(BPM_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "text/xml; charset=utf-8",
-    "Accept": "text/xml",
-    "SOAPAction": "start"
-  },
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      Accept: "text/xml",
+      SOAPAction: "start"
+    },
     body: payloadLog
   })
-        .then(response => {
-        if (!response.ok) {
-            // Handle HTTP errors
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        // If you expect an XML response, you would process it here
-        return response.text(); // Get the response body as text
-    })
+    .then(res => res.text())
     .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
-    })
-    .catch(error => {
-        // Handle network errors or errors from the .then blocks
-        console.error('There was a problem with the fetch operation:', error);
-    });
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+  // Get response root
+  const response =
+    xmlDoc.getElementsByTagNameNS("*", "TransactionLogDisplayRs")[0];
+
+  if (!response) return [];
+
+  // Optional status check
+  const statusCode =
+    response.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
+
+  if (statusCode !== "00") return [];
+
+  // 🔥 THIS IS THE KEY PART
+  const logs = response.getElementsByTagNameNS("*", "TransactionsLog");
+
+  if (!logs || logs.length === 0) return [];
+
+  return Array.from(logs).map(log => ({
+    id:
+      log.getElementsByTagNameNS("*", "TransactionId")[0]?.textContent,
+
+    user_id:
+      log.getElementsByTagNameNS("*", "bindAccID")[0]?.textContent,
+
+    type:
+      log.getElementsByTagNameNS("*", "TransactionType")[0]?.textContent,
+
+    description:
+      log.getElementsByTagNameNS("*", "Description")[0]?.textContent || "",
+
+    date:
+      log.getElementsByTagNameNS("*", "createdAt")[0]?.textContent,
+
+    points: Number(
+      log.getElementsByTagNameNS("*", "PointsAmount")[0]?.textContent || 0
+    ),
+
+    amount: Number(
+      log.getElementsByTagNameNS("*", "AmountUsed")[0]?.textContent || 0
+    ),
+
+    // optional extras (future-proof)
+    plane_name:
+      log.getElementsByTagNameNS("*", "planeName")[0]?.textContent,
+
+    item_name:
+      log.getElementsByTagNameNS("*", "ItemName")[0]?.textContent
+  }));
+});
 }
-    
