@@ -43,6 +43,32 @@ function BookFlightPage({ user }) {
     loadFlights();
   }, []);
 
+  /* ---------------- Build city dropdowns from DB data ---------------- */
+  useEffect(() => {
+    if (allFlights.length === 0) return;
+
+    const fromMap = new Map();
+    const toMap = new Map();
+
+    allFlights.forEach(f => {
+      if (f.planeAddressFrom) {
+        fromMap.set(
+          normalize(f.planeAddressFrom),
+          f.planeAddressFrom
+        );
+      }
+      if (f.planeAddressTo) {
+        toMap.set(
+          normalize(f.planeAddressTo),
+          f.planeAddressTo
+        );
+      }
+    });
+
+    setFromCities([...fromMap.values()]);
+    setToCities([...toMap.values()]);
+  }, [allFlights]);
+
   /* ---------------- Search (frontend filter) ---------------- */
   const handleSearchFlights = () => {
     if (!selectedFrom || !selectedTo) {
@@ -95,10 +121,15 @@ function BookFlightPage({ user }) {
         {/* ---------------- City selectors ---------------- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">
+            <label
+              htmlFor="fromCity"
+              className="block text-gray-700 mb-2 font-semibold"
+            >
               From
             </label>
             <select
+              id="fromCity"
+              name="fromCity"
               className="w-full px-4 py-3 border rounded-lg"
               value={selectedFrom}
               onChange={(e) => {
@@ -116,10 +147,15 @@ function BookFlightPage({ user }) {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">
+            <label
+              htmlFor="toCity"
+              className="block text-gray-700 mb-2 font-semibold"
+            >
               To
             </label>
             <select
+              id="toCity"
+              name="toCity"
               className="w-full px-4 py-3 border rounded-lg"
               value={selectedTo}
               onChange={(e) => setSelectedTo(e.target.value)}
