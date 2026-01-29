@@ -27,45 +27,26 @@ function BookFlightPage({ user }) {
 
   /* ---------------- Load ALL flights (once) ---------------- */
   useEffect(() => {
-    const loadFlights = async () => {
-      try {
-        setLoading(true);
+    if (allFlights.length === 0) return;
 
-        const flights = await PlaneSearch({}); // OSB ignores payload
-        setAllFlights(flights);
-        console.log('PlaneSearch result:', flights);
+    const fromMap = new Map();
+    const toMap = new Map();
 
-        // Build city dropdowns from DB data
-        const fromMap = new Map();
-        const toMap = new Map();
-
-        flights.forEach(f => {
-          if (f.planeAddressFrom) {
-            fromMap.set(
-              normalize(f.planeAddressFrom),
-              f.planeAddressFrom.trim()
-            );
-          }
-          if (f.planeAddressTo) {
-            toMap.set(
-              normalize(f.planeAddressTo),
-              f.planeAddressTo.trim()
-            );
-          }
-        });
-
-        setFromCities([...fromMap.values()]);
-        setToCities([...toMap.values()]);
-      } catch (err) {
-        console.error(err);
-        alert('Failed to load flight data');
-      } finally {
-        setLoading(false);
+    allFlights.forEach(f => {
+      if (f.planeAddressFrom) {
+        fromMap.set(f.planeAddressFrom, f.planeAddressFrom);
       }
-    };
+      if (f.planeAddressTo) {
+        toMap.set(f.planeAddressTo, f.planeAddressTo);
+      }
+    });
 
-    loadFlights();
-  }, []);
+    setFromCities([...fromMap.values()]);
+    setToCities([...toMap.values()]);
+    console.log('fromCities (computed):', [...fromMap.values()]);
+    console.log('toCities (computed):', [...toMap.values()]);
+    console.log('fromCities (state):', fromCities);
+  }, [allFlights]);
 
   /* ---------------- Search (frontend filter) ---------------- */
   const handleSearchFlights = () => {

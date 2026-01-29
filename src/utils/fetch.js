@@ -362,36 +362,38 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
 
     if (!planes || planes.length === 0) return [];
 
-    return Array.from(planes).map(plane => ({
-      plane_id:
-        plane.getElementsByTagName("planeId")[0]?.textContent ?? "",
+    return Array.from(planes).map(plane => {
+      const from =
+        plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ||
+        plane.getElementsByTagName("planeaddressfrom")[0]?.textContent ||
+        "";
 
-      planeName:
-        plane.getElementsByTagName("planeName")[0]?.textContent ?? "",
+      const to =
+        plane.getElementsByTagName("planeAddressTo")[0]?.textContent ||
+        plane.getElementsByTagName("planeaddressto")[0]?.textContent ||
+        "";
 
-      flightNumber:
-        plane.getElementsByTagName("flightNumber")[0]?.textContent ?? "",
-
-      planeAddressFrom:
-        plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ?? "",
-
-      planeAddressTo:
-        plane.getElementsByTagName("planeAddressTo")[0]?.textContent ?? "",
-
-      planeschedule_departs:
-        plane.getElementsByTagName("planeScheduleDeparts")[0]?.textContent ?? "",
-
-      planeschedule_arrive:
-        plane.getElementsByTagName("planeScheduleArrive")[0]?.textContent ?? "",
-
-      km: Number(
-        plane.getElementsByTagName("km")[0]?.textContent ?? 0
-      ),
-
-      price: Number(
-        plane.getElementsByTagName("price")[0]?.textContent ?? 0
-      )
-    }));
+      return {
+        planeAddressFrom: from,
+        planeAddressTo: to,
+        plane_id:
+          plane.getElementsByTagName("planeId")[0]?.textContent ?? "",
+        planeName:
+          plane.getElementsByTagName("planeName")[0]?.textContent ?? "",
+        flightNumber:
+          plane.getElementsByTagName("flightNumber")[0]?.textContent ?? "",
+        planeschedule_departs:
+          plane.getElementsByTagName("planeScheduleDeparts")[0]?.textContent ?? "",
+        planeschedule_arrive:
+          plane.getElementsByTagName("planeScheduleArrive")[0]?.textContent ?? "",
+        km: Number(
+          plane.getElementsByTagName("km")[0]?.textContent ?? 0
+        ),
+        price: Number(
+          plane.getElementsByTagName("price")[0]?.textContent ?? 0
+        )
+      };
+    });
   });
 }
 
