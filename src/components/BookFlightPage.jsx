@@ -13,27 +13,24 @@ function BookFlightPage({ user, flights }) {
   useEffect(() => {
     if (!flights || flights.length === 0) return;
 
-    const from = [...new Set(flights.map(f => f.planeAddressFrom))];
-    const to = [...new Set(flights.map(f => f.planeAddressTo))];
+    const normalize = city =>
+      city?.trim().toLowerCase();
 
-    setFromCities(from);
-    setToCities(to);
+    const fromSet = new Map();
+    const toSet = new Map();
+
+    flights.forEach(f => {
+      if (f.planeAddressFrom) {
+        fromSet.set(normalize(f.planeAddressFrom), f.planeAddressFrom.trim());
+      }
+      if (f.planeAddressTo) {
+        toSet.set(normalize(f.planeAddressTo), f.planeAddressTo.trim());
+      }
+    });
+
+    setFromCities([...fromSet.values()]);
+    setToCities([...toSet.values()]);
   }, [flights]);
-
-  const handleSearchFlights = () => {
-    if (!selectedFrom || !selectedTo) {
-      alert('Please select both cities');
-      return;
-    }
-
-    const results = flights.filter(
-      f =>
-        f.planeAddressFrom === selectedFrom &&
-        f.planeAddressTo === selectedTo
-    );
-
-    setFilteredFlights(results);
-  };
 
   const handlePurchaseFlight = async (flight) => {
     try {
