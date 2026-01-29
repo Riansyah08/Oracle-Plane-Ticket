@@ -381,11 +381,11 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
         plane.getElementsByTagNameNS("*", "planeScheduleArrive")[0]?.textContent ?? "",
 
       km: Number(
-        plane.getElementsByTagNameNS("*", "KM")[0]?.textContent ?? 0
+        plane.getElementsByTagNameNS("*", "km")[0]?.textContent ?? 0
       ),
 
       price: Number(
-        plane.getElementsByTagNameNS("*", "Price")[0]?.textContent ?? 0
+        plane.getElementsByTagNameNS("*", "price")[0]?.textContent ?? 0
       )
     }));
   });

@@ -2,6 +2,16 @@ import React from 'react';
 import { User, ShoppingCart, Award, History } from 'lucide-react';
 import { getTierColor } from '../utils/helpers';
 
+/* ---------------- Helpers ---------------- */
+  const formatDateTime = iso =>
+    iso
+      ? new Date(iso).toLocaleString('en-GB', {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        })
+      : '-';
+
+
 function HomePage({ user, onNavigate }) {
   return (
     <div className="max-w-7xl mx-auto">
@@ -35,7 +45,7 @@ function HomePage({ user, onNavigate }) {
           </div>
           <div className="bg-pink-50 p-3 rounded-lg">
             <p className="text-sm text-gray-600">Member Since</p>
-            <p className="text-lg font-bold text-pink-600">{user.join_date}</p>
+            <p className="text-lg font-bold text-pink-600">{formatDateTime(user.join_date)}</p>
           </div>
         </div>
 

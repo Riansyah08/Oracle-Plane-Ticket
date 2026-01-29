@@ -2,36 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
 
-function BookFlightPage({ user, flights }) {
-  const [selectedFrom, setSelectedFrom] = useState('');
-  const [selectedTo, setSelectedTo] = useState('');
+function BookFlightPage({ user }) {
+  const [allFlights, setAllFlights] = useState([]);
   const [filteredFlights, setFilteredFlights] = useState([]);
+
   const [fromCities, setFromCities] = useState([]);
   const [toCities, setToCities] = useState([]);
+
+  const [selectedFrom, setSelectedFrom] = useState('');
+  const [selectedTo, setSelectedTo] = useState('');
+
   const [loading, setLoading] = useState(false);
 
-  /* ---------------- Build city lists ---------------- */
-  useEffect(() => {
-    if (!flights || flights.length === 0) return;
-
-    const normalize = city => city?.trim().toLowerCase();
-    const fromMap = new Map();
-    const toMap = new Map();
-
-    flights.forEach(f => {
-      if (f.planeAddressFrom) {
-        fromMap.set(normalize(f.planeAddressFrom), f.planeAddressFrom.trim());
-      }
-      if (f.planeAddressTo) {
-        toMap.set(normalize(f.planeAddressTo), f.planeAddressTo.trim());
-      }
-    });
-
-    setFromCities([...fromMap.values()]);
-    setToCities([...toMap.values()]);
-  }, [flights]);
-
   /* ---------------- Helpers ---------------- */
+  const normalize = v => v?.trim().toLowerCase();
+
   const formatDateTime = iso =>
     iso
       ? new Date(iso).toLocaleString('en-GB', {
@@ -40,31 +25,64 @@ function BookFlightPage({ user, flights }) {
         })
       : '-';
 
-  /* ---------------- Search flights ---------------- */
-  const handleSearchFlights = async () => {
+  /* ---------------- Load ALL flights (once) ---------------- */
+  useEffect(() => {
+    const loadFlights = async () => {
+      try {
+        setLoading(true);
+
+        const flights = await PlaneSearch({}); // OSB ignores payload
+        setAllFlights(flights);
+
+        // Build city dropdowns from DB data
+        const fromMap = new Map();
+        const toMap = new Map();
+
+        flights.forEach(f => {
+          if (f.planeAddressFrom) {
+            fromMap.set(
+              normalize(f.planeAddressFrom),
+              f.planeAddressFrom.trim()
+            );
+          }
+          if (f.planeAddressTo) {
+            toMap.set(
+              normalize(f.planeAddressTo),
+              f.planeAddressTo.trim()
+            );
+          }
+        });
+
+        setFromCities([...fromMap.values()]);
+        setToCities([...toMap.values()]);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to load flight data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFlights();
+  }, []);
+
+  /* ---------------- Search (frontend filter) ---------------- */
+  const handleSearchFlights = () => {
     if (!selectedFrom || !selectedTo) {
       alert('Please select both cities');
       return;
     }
 
-    try {
-      setLoading(true);
+    const results = allFlights.filter(
+      f =>
+        normalize(f.planeAddressFrom) === normalize(selectedFrom) &&
+        normalize(f.planeAddressTo) === normalize(selectedTo)
+    );
 
-      const results = await PlaneSearch({
-        planeAddressFrom: selectedFrom,
-        planeAddressTo: selectedTo
-      });
-
-      setFilteredFlights(results);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to search flights');
-    } finally {
-      setLoading(false);
-    }
+    setFilteredFlights(results);
   };
 
-  /* ---------------- Purchase flight ---------------- */
+  /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (flight) => {
     try {
       setLoading(true);
@@ -74,7 +92,8 @@ function BookFlightPage({ user, flights }) {
         email: user.email,
         planeaddress_from: flight.planeAddressFrom,
         planeaddress_to: flight.planeAddressTo,
-        planeseat: flight.planeSeat
+        planeschedule_departs: flight.planeschedule_departs,
+        planeschedule_arrive: flight.planeschedule_arrive
       };
 
       await purchasePlane(payload);
@@ -82,7 +101,7 @@ function BookFlightPage({ user, flights }) {
       alert('✈️ Flight purchased successfully!');
     } catch (err) {
       console.error(err);
-      alert('❌ Failed to purchase flight. Please try again.');
+      alert('❌ Failed to purchase flight.');
     } finally {
       setLoading(false);
     }
@@ -103,7 +122,7 @@ function BookFlightPage({ user, flights }) {
               From
             </label>
             <select
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border rounded-lg"
               value={selectedFrom}
               onChange={(e) => {
                 setSelectedFrom(e.target.value);
@@ -112,7 +131,9 @@ function BookFlightPage({ user, flights }) {
             >
               <option value="">Select departure city</option>
               {fromCities.map(city => (
-                <option key={`from-${city}`} value={city}>{city}</option>
+                <option key={`from-${city}`} value={city}>
+                  {city}
+                </option>
               ))}
             </select>
           </div>
@@ -122,7 +143,7 @@ function BookFlightPage({ user, flights }) {
               To
             </label>
             <select
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border rounded-lg"
               value={selectedTo}
               onChange={(e) => setSelectedTo(e.target.value)}
               disabled={!selectedFrom}
@@ -131,7 +152,9 @@ function BookFlightPage({ user, flights }) {
               {toCities
                 .filter(city => city !== selectedFrom)
                 .map(city => (
-                  <option key={`to-${city}`} value={city}>{city}</option>
+                  <option key={`to-${city}`} value={city}>
+                    {city}
+                  </option>
                 ))}
             </select>
           </div>
@@ -143,7 +166,7 @@ function BookFlightPage({ user, flights }) {
           disabled={loading}
           className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition mb-6 font-semibold disabled:opacity-50"
         >
-          {loading ? 'Searching...' : 'Search Flights'}
+          Search Flights
         </button>
 
         {/* ---------------- Results ---------------- */}
@@ -174,9 +197,7 @@ function BookFlightPage({ user, flights }) {
                       Arrival: {formatDateTime(flight.planeschedule_arrive)}
                     </p>
 
-                    <p className="text-gray-600">
-                      KM: {flight.km}
-                    </p>
+                    <p className="text-gray-600">KM: {flight.km}</p>
                   </div>
 
                   <div className="text-right">
@@ -188,7 +209,7 @@ function BookFlightPage({ user, flights }) {
                       disabled={loading}
                       className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-semibold disabled:opacity-50"
                     >
-                      {loading ? 'Processing...' : 'Purchase'}
+                      Purchase
                     </button>
                   </div>
                 </div>
