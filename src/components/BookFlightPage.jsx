@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import { purchasePlane } from '../utils/fetch.js';
+import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
 
 function BookFlightPage({ user, flights }) {
   const [selectedFrom, setSelectedFrom] = useState('');
@@ -10,41 +10,71 @@ function BookFlightPage({ user, flights }) {
   const [toCities, setToCities] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  /* ---------------- Build city lists ---------------- */
   useEffect(() => {
     if (!flights || flights.length === 0) return;
 
-    const normalize = city =>
-      city?.trim().toLowerCase();
-
-    const fromSet = new Map();
-    const toSet = new Map();
+    const normalize = city => city?.trim().toLowerCase();
+    const fromMap = new Map();
+    const toMap = new Map();
 
     flights.forEach(f => {
       if (f.planeAddressFrom) {
-        fromSet.set(normalize(f.planeAddressFrom), f.planeAddressFrom.trim());
+        fromMap.set(normalize(f.planeAddressFrom), f.planeAddressFrom.trim());
       }
       if (f.planeAddressTo) {
-        toSet.set(normalize(f.planeAddressTo), f.planeAddressTo.trim());
+        toMap.set(normalize(f.planeAddressTo), f.planeAddressTo.trim());
       }
     });
 
-    setFromCities([...fromSet.values()]);
-    setToCities([...toSet.values()]);
+    setFromCities([...fromMap.values()]);
+    setToCities([...toMap.values()]);
   }, [flights]);
 
+  /* ---------------- Helpers ---------------- */
+  const formatDateTime = iso =>
+    iso
+      ? new Date(iso).toLocaleString('en-GB', {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        })
+      : '-';
+
+  /* ---------------- Search flights ---------------- */
+  const handleSearchFlights = async () => {
+    if (!selectedFrom || !selectedTo) {
+      alert('Please select both cities');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const results = await PlaneSearch({
+        planeAddressFrom: selectedFrom,
+        planeAddressTo: selectedTo
+      });
+
+      setFilteredFlights(results);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to search flights');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- Purchase flight ---------------- */
   const handlePurchaseFlight = async (flight) => {
     try {
       setLoading(true);
 
       const payload = {
-        plane_id: flight.plane_id,
-        plane_name: flight.plane_name,
-        flight_number: flight.flightNumber,
-        from: flight.planeAddressFrom,
-        to: flight.planeAddressTo,
-        amount: flight.price,
-        km: flight.km,
-        payment_method: 'BANK_TRANSFER',
+        user_id: user.user_id,
+        email: user.email,
+        planeaddress_from: flight.planeAddressFrom,
+        planeaddress_to: flight.planeAddressTo,
+        planeseat: flight.planeSeat
       };
 
       await purchasePlane(payload);
@@ -66,7 +96,7 @@ function BookFlightPage({ user, flights }) {
           Book a Flight
         </h2>
 
-        {/* ----------------- City selectors ----------------- */}
+        {/* ---------------- City selectors ---------------- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">
@@ -82,7 +112,7 @@ function BookFlightPage({ user, flights }) {
             >
               <option value="">Select departure city</option>
               {fromCities.map(city => (
-                <option key={city} value={city}>{city}</option>
+                <option key={`from-${city}`} value={city}>{city}</option>
               ))}
             </select>
           </div>
@@ -101,21 +131,22 @@ function BookFlightPage({ user, flights }) {
               {toCities
                 .filter(city => city !== selectedFrom)
                 .map(city => (
-                  <option key={city} value={city}>{city}</option>
+                  <option key={`to-${city}`} value={city}>{city}</option>
                 ))}
             </select>
           </div>
         </div>
 
-        {/* ----------------- Search button ----------------- */}
+        {/* ---------------- Search button ---------------- */}
         <button
           onClick={handleSearchFlights}
-          className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition mb-6 font-semibold"
+          disabled={loading}
+          className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition mb-6 font-semibold disabled:opacity-50"
         >
-          Search Flights
+          {loading ? 'Searching...' : 'Search Flights'}
         </button>
 
-        {/* ----------------- Flight results ----------------- */}
+        {/* ---------------- Results ---------------- */}
         {filteredFlights.length > 0 && (
           <div>
             <h3 className="text-xl font-bold mb-4">Available Flights</h3>
@@ -124,16 +155,28 @@ function BookFlightPage({ user, flights }) {
               {filteredFlights.map(flight => (
                 <div
                   key={flight.plane_id}
-                  className="border rounded-lg p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition"
+                  className="border rounded-lg p-5 flex flex-col md:flex-row justify-between gap-4 hover:shadow-md transition"
                 >
                   <div className="flex-1">
                     <p className="font-bold text-xl">
                       {flight.planeAddressFrom} → {flight.planeAddressTo}
                     </p>
+
                     <p className="text-gray-600">
                       Flight: {flight.flightNumber} | Aircraft: {flight.planeName}
                     </p>
-                    <p className="text-gray-600">KM: {flight.km}</p>
+
+                    <p className="text-gray-600">
+                      Departure: {formatDateTime(flight.planeschedule_departs)}
+                    </p>
+
+                    <p className="text-gray-600">
+                      Arrival: {formatDateTime(flight.planeschedule_arrive)}
+                    </p>
+
+                    <p className="text-gray-600">
+                      KM: {flight.km}
+                    </p>
                   </div>
 
                   <div className="text-right">
@@ -154,7 +197,7 @@ function BookFlightPage({ user, flights }) {
           </div>
         )}
 
-        {filteredFlights.length === 0 && selectedFrom && selectedTo && (
+        {filteredFlights.length === 0 && selectedFrom && selectedTo && !loading && (
           <p className="text-gray-500 text-center">
             No flights found for this route.
           </p>

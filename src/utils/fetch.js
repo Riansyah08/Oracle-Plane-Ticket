@@ -319,6 +319,112 @@ export function purchasePlane(newTransaction) {
 }
 
 /* ================= TRANSACTION LOG ================= */
+export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
+  const payloadSearch = `
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+<soap:Body>  
+  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
+    <Status_Code></Status_Code>
+    <ns2:TransactionLogDisplayRq>
+      <ns2:UserAccID></ns2:UserAccID>
+      <ns2:Email></ns2:Email>
+    </ns2:TransactionLogDisplayRq>
+    <ns2:UserInsertRq>
+    <ns2:FullName></ns2:FullName>
+      <ns2:PasswordHash></ns2:PasswordHash>
+      <ns2:PhoneNum></ns2:PhoneNum>
+      <ns2:PointsBalance></ns2:PointsBalance>
+      <ns2:Email></ns2:Email>
+      <ns2:TierID></ns2:TierID>
+      <ns2:KmHit></ns2:KmHit>
+    </ns2:UserInsertRq>
+    <ns2:PointRedeemRq>
+      <ns2:UserAccID></ns2:UserAccID>
+      <ns2:Email></ns2:Email>
+      <ns2:ItemId></ns2:ItemId>
+      <ns2:Amount></ns2:Amount>
+    </ns2:PointRedeemRq>
+    <ns2:UserInformationRq>
+      <ns2:UserAccID></ns2:UserAccID>
+      <ns2:Email></ns2:Email>
+      <ns2:planeAddressFrom></ns2:planeAddressFrom>
+      <ns2:planeAddressTo></ns2:planeAddressTo>
+      <ns2:planeSeat></ns2:planeSeat>
+    </ns2:UserInformationRq>
+    <user_options>Log_Display</user_options>
+    <ns2:PlaneScheduleRq>
+      <ns2:planeAddressFrom>${planeAddressFrom}</ns2:planeAddressFrom>
+      <ns2:planeAddressTo>${planeAddressTo}</ns2:planeAddressTo>
+    </ns2:PlaneScheduleRq>
+    </ns1:start>
+</soap:Body>
+</soap:Envelope>
+`;
+
+  return fetch(BPM_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      Accept: "text/xml",
+      SOAPAction: "start"
+    },
+    body: payloadSearch
+  })
+  .then(res => res.text())
+  .then(xmlText => {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+    const response =
+      xmlDoc.getElementsByTagNameNS("*", "PlaneScheduleRs")[0];
+
+    if (!response) return [];
+
+    const statusCode =
+      response.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
+
+    if (statusCode !== "00") return [];
+
+    // 👇 adjust this tag if backend uses a different wrapper
+    const planes =
+      response.getElementsByTagNameNS("*", "PlaneSchedule");
+
+    if (!planes || planes.length === 0) return [];
+
+    return Array.from(planes).map(plane => ({
+      plane_id:
+        plane.getElementsByTagNameNS("*", "planeId")[0]?.textContent ?? "",
+
+      planeName:
+        plane.getElementsByTagNameNS("*", "planeName")[0]?.textContent ?? "",
+
+      flightNumber:
+        plane.getElementsByTagNameNS("*", "flightNumber")[0]?.textContent ?? "",
+
+      planeAddressFrom:
+        plane.getElementsByTagNameNS("*", "planeAddressFrom")[0]?.textContent ?? "",
+
+      planeAddressTo:
+        plane.getElementsByTagNameNS("*", "planeAddressTo")[0]?.textContent ?? "",
+
+      planeschedule_departs:
+        plane.getElementsByTagNameNS("*", "planeScheduleDeparts")[0]?.textContent ?? "",
+
+      planeschedule_arrive:
+        plane.getElementsByTagNameNS("*", "planeScheduleArrive")[0]?.textContent ?? "",
+
+      km: Number(
+        plane.getElementsByTagNameNS("*", "KM")[0]?.textContent ?? 0
+      ),
+
+      price: Number(
+        plane.getElementsByTagNameNS("*", "Price")[0]?.textContent ?? 0
+      )
+    }));
+  });
+}
+
+/* ================= TRANSACTION LOG ================= */
 export function Transactionlog({ email, userAccID }) {
   const payloadLog = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
