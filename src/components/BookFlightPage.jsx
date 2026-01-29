@@ -33,6 +33,7 @@ function BookFlightPage({ user }) {
 
         const flights = await PlaneSearch({}); // OSB ignores payload
         setAllFlights(flights);
+        console.log('PlaneSearch result:', flights);
 
         // Build city dropdowns from DB data
         const fromMap = new Map();

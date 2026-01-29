@@ -327,7 +327,7 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
       <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSchedule" xmlns:ns2="http://www.permatabank.com/UserSystem">
-        <ns2:PlaneScheduleRq/>
+        <ns2:PlaneScheduleRq></ns2:PlaneScheduleRq>
       </ns1:start>
     </soap:Body>
     </soap:Envelope>
@@ -343,49 +343,53 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
     body: payloadSearch
   })
   .then(res => res.text())
+  .then(xml => {
+    console.log('RAW RESPONSE:', xml);
+  })
   .then(xmlText => {
+    console.log('RAW XML:', xmlText); // keep this while debugging
+
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
     const response =
-      xmlDoc.getElementsByTagNameNS("*", "PlanescheduleCollection")[0];
+      xmlDoc.getElementsByTagName("PlanescheduleCollection")[0];
 
     if (!response) return [];
 
-    // 👇 adjust this tag if backend uses a different wrapper
     const planes =
-      response.getElementsByTagNameNS("*", "Planeschedule");
+      response.getElementsByTagName("Planeschedule");
 
     if (!planes || planes.length === 0) return [];
 
     return Array.from(planes).map(plane => ({
       plane_id:
-        plane.getElementsByTagNameNS("*", "planeId")[0]?.textContent ?? "",
+        plane.getElementsByTagName("planeId")[0]?.textContent ?? "",
 
       planeName:
-        plane.getElementsByTagNameNS("*", "planeName")[0]?.textContent ?? "",
+        plane.getElementsByTagName("planeName")[0]?.textContent ?? "",
 
       flightNumber:
-        plane.getElementsByTagNameNS("*", "flightNumber")[0]?.textContent ?? "",
+        plane.getElementsByTagName("flightNumber")[0]?.textContent ?? "",
 
       planeAddressFrom:
-        plane.getElementsByTagNameNS("*", "planeAddressFrom")[0]?.textContent ?? "",
+        plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ?? "",
 
       planeAddressTo:
-        plane.getElementsByTagNameNS("*", "planeAddressTo")[0]?.textContent ?? "",
+        plane.getElementsByTagName("planeAddressTo")[0]?.textContent ?? "",
 
       planeschedule_departs:
-        plane.getElementsByTagNameNS("*", "planeScheduleDeparts")[0]?.textContent ?? "",
+        plane.getElementsByTagName("planeScheduleDeparts")[0]?.textContent ?? "",
 
       planeschedule_arrive:
-        plane.getElementsByTagNameNS("*", "planeScheduleArrive")[0]?.textContent ?? "",
+        plane.getElementsByTagName("planeScheduleArrive")[0]?.textContent ?? "",
 
       km: Number(
-        plane.getElementsByTagNameNS("*", "km")[0]?.textContent ?? 0
+        plane.getElementsByTagName("km")[0]?.textContent ?? 0
       ),
 
       price: Number(
-        plane.getElementsByTagNameNS("*", "price")[0]?.textContent ?? 0
+        plane.getElementsByTagName("price")[0]?.textContent ?? 0
       )
     }));
   });
