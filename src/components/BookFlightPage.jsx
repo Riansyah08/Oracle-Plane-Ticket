@@ -1,50 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import {purchasePlane} from '../utils/fetch.js';
+import { purchasePlane } from '../utils/fetch.js';
 
-function BookFlightPage({ user, flights, updateUser, addTransaction }) {
+function BookFlightPage({ user, flights }) {
   const [selectedFrom, setSelectedFrom] = useState('');
   const [selectedTo, setSelectedTo] = useState('');
   const [filteredFlights, setFilteredFlights] = useState([]);
+  const [fromCities, setFromCities] = useState([]);
+  const [toCities, setToCities] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const cities = ['New York', 'Los Angeles', 'London', 'Paris', 'Tokyo', 'Singapore'];
+  useEffect(() => {
+    if (!flights || flights.length === 0) return;
+
+    const from = [...new Set(flights.map(f => f.planeAddressFrom))];
+    const to = [...new Set(flights.map(f => f.planeAddressTo))];
+
+    setFromCities(from);
+    setToCities(to);
+  }, [flights]);
 
   const handleSearchFlights = () => {
-    if (selectedFrom && selectedTo) {
-      const results = flights.filter(f => f.from === selectedFrom && f.to === selectedTo);
-      setFilteredFlights(results);
+    if (!selectedFrom || !selectedTo) {
+      alert('Please select both cities');
+      return;
     }
+
+    const results = flights.filter(
+      f =>
+        f.planeAddressFrom === selectedFrom &&
+        f.planeAddressTo === selectedTo
+    );
+
+    setFilteredFlights(results);
   };
 
- const handlePurchaseFlight = async (flight) => {
-  if (user.points_balance >= flight.points) {
-    const updatedUser = {
-      ...user,
-      points_balance: user.points_balance - flight.points,
-      km_hit: user.km_hit + 5000, 
-    };
+  const handlePurchaseFlight = async (flight) => {
+    try {
+      setLoading(true);
 
-    updateUser(updatedUser);
+      const payload = {
+        plane_id: flight.plane_id,
+        plane_name: flight.plane_name,
+        flight_number: flight.flightNumber,
+        from: flight.planeAddressFrom,
+        to: flight.planeAddressTo,
+        amount: flight.price,
+        km: flight.km,
+        payment_method: 'BANK_TRANSFER',
+      };
 
-    const newTransaction = {
-      id: `T${String(Math.random()).substring(2, 8)}`,
-      user_id: user.user_id,
-      type: 'Flight Purchase',
-      description: `${flight.id} - ${flight.from} to ${flight.to}`,
-      points: -flight.points,
-      date: new Date().toISOString().split('T')[0],
-      amount: flight.price,
-    };
+      await purchasePlane(payload);
 
-    // POST request handled here
-    await purchasePlane(newTransaction);
-
-    alert(`Flight purchased successfully! ${flight.points} points deducted.`);
-  } else {
-    alert('Insufficient points balance!');
-  }
-};
-
+      alert('✈️ Flight purchased successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('❌ Failed to purchase flight. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -54,63 +69,98 @@ function BookFlightPage({ user, flights, updateUser, addTransaction }) {
           Book a Flight
         </h2>
 
+        {/* ----------------- City selectors ----------------- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">From</label>
+            <label className="block text-gray-700 mb-2 font-semibold">
+              From
+            </label>
             <select
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedFrom}
-              onChange={(e) => setSelectedFrom(e.target.value)}
+              onChange={(e) => {
+                setSelectedFrom(e.target.value);
+                setSelectedTo('');
+              }}
             >
               <option value="">Select departure city</option>
-              {cities.map(city => <option key={city} value={city}>{city}</option>)}
+              {fromCities.map(city => (
+                <option key={city} value={city}>{city}</option>
+              ))}
             </select>
           </div>
+
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">To</label>
+            <label className="block text-gray-700 mb-2 font-semibold">
+              To
+            </label>
             <select
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedTo}
               onChange={(e) => setSelectedTo(e.target.value)}
+              disabled={!selectedFrom}
             >
               <option value="">Select destination city</option>
-              {cities.map(city => <option key={city} value={city}>{city}</option>)}
+              {toCities
+                .filter(city => city !== selectedFrom)
+                .map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
             </select>
           </div>
         </div>
 
+        {/* ----------------- Search button ----------------- */}
         <button
           onClick={handleSearchFlights}
-          className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition mb-6 text-base font-semibold"
+          className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition mb-6 font-semibold"
         >
           Search Flights
         </button>
 
+        {/* ----------------- Flight results ----------------- */}
         {filteredFlights.length > 0 && (
           <div>
             <h3 className="text-xl font-bold mb-4">Available Flights</h3>
+
             <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
               {filteredFlights.map(flight => (
-                <div key={flight.id} className="border rounded-lg p-5 flex flex-col md:flex-row justify-between items-start md:items-center hover:shadow-md transition gap-4">
+                <div
+                  key={flight.plane_id}
+                  className="border rounded-lg p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition"
+                >
                   <div className="flex-1">
-                    <p className="font-bold text-xl mb-1">{flight.from} → {flight.to}</p>
-                    <p className="text-gray-600">Flight: {flight.id} | Aircraft: {flight.aircraft}</p>
-                    <p className="text-gray-600">Duration: {flight.duration}</p>
+                    <p className="font-bold text-xl">
+                      {flight.planeAddressFrom} → {flight.planeAddressTo}
+                    </p>
+                    <p className="text-gray-600">
+                      Flight: {flight.flightNumber} | Aircraft: {flight.planeName}
+                    </p>
+                    <p className="text-gray-600">KM: {flight.km}</p>
                   </div>
+
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-600">{flight.points} pts</p>
-                    <p className="text-gray-600 mb-2">${flight.price}</p>
+                    <p className="text-gray-700 font-semibold mb-2">
+                      Rp {flight.price.toLocaleString()}
+                    </p>
                     <button
                       onClick={() => handlePurchaseFlight(flight)}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-semibold"
+                      disabled={loading}
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-semibold disabled:opacity-50"
                     >
-                      Purchase
+                      {loading ? 'Processing...' : 'Purchase'}
                     </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        )}
+
+        {filteredFlights.length === 0 && selectedFrom && selectedTo && (
+          <p className="text-gray-500 text-center">
+            No flights found for this route.
+          </p>
         )}
       </div>
     </div>
