@@ -27,26 +27,21 @@ function BookFlightPage({ user }) {
 
   /* ---------------- Load ALL flights (once) ---------------- */
   useEffect(() => {
-    if (allFlights.length === 0) return;
-
-    const fromMap = new Map();
-    const toMap = new Map();
-
-    allFlights.forEach(f => {
-      if (f.planeAddressFrom) {
-        fromMap.set(f.planeAddressFrom, f.planeAddressFrom);
+    const loadFlights = async () => {
+      try {
+        setLoading(true);
+        const flights = await PlaneSearch();
+        console.log('PlaneSearch result:', flights);
+        setAllFlights(flights);
+      } catch (err) {
+        console.error('Failed to load flights', err);
+      } finally {
+        setLoading(false);
       }
-      if (f.planeAddressTo) {
-        toMap.set(f.planeAddressTo, f.planeAddressTo);
-      }
-    });
+    };
 
-    setFromCities([...fromMap.values()]);
-    setToCities([...toMap.values()]);
-    console.log('fromCities (computed):', [...fromMap.values()]);
-    console.log('toCities (computed):', [...toMap.values()]);
-    console.log('fromCities (state):', fromCities);
-  }, [allFlights]);
+    loadFlights();
+  }, []);
 
   /* ---------------- Search (frontend filter) ---------------- */
   const handleSearchFlights = () => {

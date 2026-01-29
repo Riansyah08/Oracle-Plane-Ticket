@@ -322,16 +322,17 @@ export function purchasePlane(newTransaction) {
 }
 
 /* ================= TRANSACTION LOG ================= */
-export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
+export function PlaneSearch() {
   const payloadSearch = `
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSchedule" xmlns:ns2="http://www.permatabank.com/UserSystem">
-        <ns2:PlaneScheduleRq></ns2:PlaneScheduleRq>
-      </ns1:start>
-    </soap:Body>
+      <soap:Body>
+        <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSchedule"
+                   xmlns:ns2="http://www.permatabank.com/UserSystem">
+          <ns2:PlaneScheduleRq></ns2:PlaneScheduleRq>
+        </ns1:start>
+      </soap:Body>
     </soap:Envelope>
-`;
+  `;
 
   return fetch(Plansesch_URL, {
     method: "POST",
@@ -342,59 +343,54 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
     },
     body: payloadSearch
   })
-  .then(res => res.text())
-  .then(xml => {
-    console.log('RAW RESPONSE:', xml);
-  })
-  .then(xmlText => {
-    console.log('RAW XML:', xmlText); // keep this while debugging
+    .then(res => res.text())
+    .then(xmlText => {
+      console.log('RAW XML:', xmlText);
 
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
-    const response =
-      xmlDoc.getElementsByTagName("PlanescheduleCollection")[0];
+      const response =
+        xmlDoc.getElementsByTagName("PlanescheduleCollection")[0];
 
-    if (!response) return [];
+      if (!response) return [];
 
-    const planes =
-      response.getElementsByTagName("Planeschedule");
+      const planes =
+        response.getElementsByTagName("Planeschedule");
 
-    if (!planes || planes.length === 0) return [];
+      if (!planes || planes.length === 0) return [];
 
-    return Array.from(planes).map(plane => {
-      const from =
-        plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ||
-        plane.getElementsByTagName("planeaddressfrom")[0]?.textContent ||
-        "";
+      return Array.from(planes).map(plane => ({
+        planeAddressFrom:
+          plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ?? "",
 
-      const to =
-        plane.getElementsByTagName("planeAddressTo")[0]?.textContent ||
-        plane.getElementsByTagName("planeaddressto")[0]?.textContent ||
-        "";
+        planeAddressTo:
+          plane.getElementsByTagName("planeAddressTo")[0]?.textContent ?? "",
 
-      return {
-        planeAddressFrom: from,
-        planeAddressTo: to,
         plane_id:
           plane.getElementsByTagName("planeId")[0]?.textContent ?? "",
+
         planeName:
           plane.getElementsByTagName("planeName")[0]?.textContent ?? "",
+
         flightNumber:
           plane.getElementsByTagName("flightNumber")[0]?.textContent ?? "",
+
         planeschedule_departs:
           plane.getElementsByTagName("planeScheduleDeparts")[0]?.textContent ?? "",
+
         planeschedule_arrive:
           plane.getElementsByTagName("planeScheduleArrive")[0]?.textContent ?? "",
+
         km: Number(
           plane.getElementsByTagName("km")[0]?.textContent ?? 0
         ),
+
         price: Number(
           plane.getElementsByTagName("price")[0]?.textContent ?? 0
         )
-      };
+      }));
     });
-  });
 }
 
 /* ================= TRANSACTION LOG ================= */
