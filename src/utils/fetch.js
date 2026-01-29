@@ -376,18 +376,13 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
     const response =
-      xmlDoc.getElementsByTagNameNS("*", "PlaneScheduleRs")[0];
+      xmlDoc.getElementsByTagNameNS("*", "PlanescheduleCollection")[0];
 
     if (!response) return [];
 
-    const statusCode =
-      response.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
-
-    if (statusCode !== "00") return [];
-
     // 👇 adjust this tag if backend uses a different wrapper
     const planes =
-      response.getElementsByTagNameNS("*", "PlaneSchedule");
+      response.getElementsByTagNameNS("*", "Planeschedule");
 
     if (!planes || planes.length === 0) return [];
 
