@@ -346,46 +346,55 @@ export function PlaneSearch() {
     .then(res => res.text())
     .then(xmlText => {
       console.log('RAW XML:', xmlText);
-
+        
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-      const response =
-        xmlDoc.getElementsByTagName("PlanescheduleCollection")[0];
-
-      if (!response) return [];
-
+        
+      // 1️⃣ Find PlaneScheduleRs (this EXISTS)
+      const scheduleRs =
+        xmlDoc.getElementsByTagName("PlaneScheduleRs")[0];
+        
+      if (!scheduleRs) {
+        console.error('PlaneScheduleRs not found');
+        return [];
+      }
+    
+      // 2️⃣ Get Planeschedule nodes (one or many)
       const planes =
-        response.getElementsByTagName("Planeschedule");
-
-      if (!planes || planes.length === 0) return [];
-
+        scheduleRs.getElementsByTagName("Planeschedule");
+    
+      if (!planes || planes.length === 0) {
+        console.error('No Planeschedule nodes found');
+        return [];
+      }
+    
+      // 3️⃣ Map planes
       return Array.from(planes).map(plane => ({
-        planeAddressFrom:
-          plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ?? "",
-
-        planeAddressTo:
-          plane.getElementsByTagName("planeAddressTo")[0]?.textContent ?? "",
-
         plane_id:
           plane.getElementsByTagName("planeId")[0]?.textContent ?? "",
-
+      
         planeName:
           plane.getElementsByTagName("planeName")[0]?.textContent ?? "",
-
+      
         flightNumber:
           plane.getElementsByTagName("flightNumber")[0]?.textContent ?? "",
-
+      
+        planeAddressFrom:
+          plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ?? "",
+      
+        planeAddressTo:
+          plane.getElementsByTagName("planeAddressTo")[0]?.textContent ?? "",
+      
         planeschedule_departs:
           plane.getElementsByTagName("planeScheduleDeparts")[0]?.textContent ?? "",
-
+      
         planeschedule_arrive:
           plane.getElementsByTagName("planeScheduleArrive")[0]?.textContent ?? "",
-
+      
         km: Number(
           plane.getElementsByTagName("km")[0]?.textContent ?? 0
         ),
-
+      
         price: Number(
           plane.getElementsByTagName("price")[0]?.textContent ?? 0
         )
