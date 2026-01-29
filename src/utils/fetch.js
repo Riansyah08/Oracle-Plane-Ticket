@@ -1,6 +1,6 @@
 const BPM_URL = "/soa-infra/services/default/BpmProject/MainProccess.service";
 const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
-const Plansesch_URL = ""
+const Plansesch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
 
 
 // Login logic payload fetching 
@@ -333,7 +333,7 @@ export function PlaneSearch({ planeAddressFrom, planeAddressTo }) {
     </soap:Envelope>
 `;
 
-  return fetch(BPM_URL, {
+  return fetch(Plansesch_URL, {
     method: "POST",
     headers: {
       "Content-Type": "text/xml; charset=utf-8",
