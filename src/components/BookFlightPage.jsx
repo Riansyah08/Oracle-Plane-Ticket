@@ -90,21 +90,21 @@ function BookFlightPage({ user }) {
   };
 
   /* ---------------- Purchase ---------------- */
-  const handlePurchaseFlight = async (flight) => {
+  const handlePurchaseFlight = async (tx) => {
   try {
     setLoading(true);
 
     const payload = {
-      user_id: user.user_id,
-      email: user.email,
-      planeAddressFrom: flight.planeAddressFrom,
-      planeAddressTo: flight.planeAddressTo,
-      planeSeat: flight.seat // ✅ NEW
+      user_id: tx.user_id,
+      email: tx.email,
+      planeAddressFrom: tx.planeaddress_from,
+      planeAddressTo: tx.planeaddress_to,
+      planeSeat: tx.plane_seat
     };
-
+    console.log("purchasePlane normalized:", payload);
     await purchasePlane(payload);
 
-    alert(`✈️ Flight purchased successfully! Seat ${flight.seat}`);
+    alert(`✈️ Flight purchased successfully! Seat ${tx.seat}`);
   } catch (err) {
     console.error(err);
     alert('❌ Failed to purchase flight.');
