@@ -526,11 +526,15 @@ export function item_select() {
       );
 
       return items.map(item => ({
-        id: Number(item.getElementsByTagNameNS("*", "itemId")[0]?.textContent),
+        id: item.getElementsByTagNameNS("*", "itemId")[0]?.textContent,
         name: item.getElementsByTagNameNS("*", "itemName")[0]?.textContent,
         category: item.getElementsByTagNameNS("*", "itemDescription")[0]?.textContent,
-        points: Number(item.getElementsByTagNameNS("*", "itemPrice")[0]?.textContent || 0),
-        tier: mapTier(item.getElementsByTagNameNS("*", "minTier")[0]?.textContent)
+        points: Number(
+          item.getElementsByTagNameNS("*", "itemPrice")[0]?.textContent || 0
+        ),
+        tier: mapTier(
+          item.getElementsByTagNameNS("*", "minTier")[0]?.textContent
+        )
       }));
     });
 }
