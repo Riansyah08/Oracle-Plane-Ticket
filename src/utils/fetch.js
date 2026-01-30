@@ -203,7 +203,7 @@ export function purchaseItem(newTransaction) {
       <ns2:KmHit></ns2:KmHit>
     </ns2:UserInsertRq>
     <ns2:PointRedeemRq>
-        <ns2:UserAccID>${newTransaction.id}</ns2:UserAccID>
+        <ns2:UserAccID>${newTransaction.user_id}</ns2:UserAccID>
         <ns2:Email>${newTransaction.email}</ns2:Email>
         <ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
         <ns2:Amount>${newTransaction.amount}</ns2:Amount>

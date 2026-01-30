@@ -2,6 +2,7 @@ import React from "react";
 import { Award } from "lucide-react";
 import { getTierColor } from "../utils/helpers";
 import { item_select } from "../utils/fetch";
+import { purchaseItem } from "../utils/fetch";
 
 function RewardsPage({ user, rewardItems, updateUser }) {
   const handleRedeemItem = async (item) => {
@@ -30,8 +31,8 @@ function RewardsPage({ user, rewardItems, updateUser }) {
     await purchaseItem({
       id: user.user_id,      // Fix: map to UserAccID
       email: user.email,
-      itemId: item.id,
-      amount: 1
+      itemId: item.itemId,
+      amount: item.amount
     });
     alert(`${item.name} redeemed successfully!`);
   } catch (error) {
