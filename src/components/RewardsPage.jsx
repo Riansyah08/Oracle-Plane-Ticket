@@ -7,13 +7,11 @@ function RewardsPage({ user, rewardItems, updateUser }) {
   const handleRedeemItem = async (item) => {
     const tierOrder = ["Silver", "Gold", "Platinum"];
 
-    // ❌ insufficient points
     if (user.points_balance < item.points) {
       alert("Insufficient points balance!");
       return;
     }
 
-    // ❌ tier restriction
     if (
       tierOrder.indexOf(user.account_tier) <
       tierOrder.indexOf(item.tier)
@@ -24,7 +22,7 @@ function RewardsPage({ user, rewardItems, updateUser }) {
 
     const prevPoints = user.points_balance;
 
-    // ✅ optimistic update
+    // optimistic UI update
     updateUser({
       ...user,
       points_balance: user.points_balance - item.points
@@ -32,15 +30,14 @@ function RewardsPage({ user, rewardItems, updateUser }) {
 
     try {
       await purchaseItem({
-        id: user.user_id,   // maps to <UserAccID>
+        user_id: user.user_id,
         email: user.email,
-        itemId: item.id,    // ✅ FIXED
-        amount: 1           // ✅ FIXED
+        itemId: item.id,
+        amount: 1
       });
 
       alert(`${item.name} redeemed successfully!`);
     } catch (err) {
-      // rollback on failure
       updateUser({ ...user, points_balance: prevPoints });
       alert("Redemption failed");
       console.error(err);
@@ -63,7 +60,7 @@ function RewardsPage({ user, rewardItems, updateUser }) {
         </p>
 
         <div className="space-y-4">
-          {rewardItems.map((item) => (
+          {rewardItems.map(item => (
             <div key={item.id} className="border rounded-lg p-5">
               <div className="flex justify-between">
                 <div>
