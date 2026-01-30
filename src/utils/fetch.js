@@ -203,7 +203,7 @@ export function purchaseItem(newTransaction) {
       <ns2:KmHit></ns2:KmHit>
     </ns2:UserInsertRq>
     <ns2:PointRedeemRq>
-        <ns2:UserAccID>${newTransaction.user_id}</ns2:UserAccID>
+        <ns2:UserAccID>${newTransaction.id}</ns2:UserAccID>
         <ns2:Email>${newTransaction.email}</ns2:Email>
         <ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
         <ns2:Amount>${newTransaction.amount}</ns2:Amount>
@@ -503,10 +503,13 @@ export function Transactionlog({ email, userAccID }) {
 // utils/fetch.js
 export function item_select() {
   const payload = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-      <soapenv:Body/>
-    </soapenv:Envelope>
-  `;
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:bind="http://www.permatabank.com/UserSystem">
+  <soapenv:Body>
+    <bind:ItemSelectRq/>
+  </soapenv:Body>
+</soapenv:Envelope>
+`;
 
   return fetch(ITEMLIST_URL, {
     method: "POST",
@@ -516,7 +519,12 @@ export function item_select() {
     },
     body: payload
   })
-    .then(res => res.text())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Item select failed: ${res.status}`);
+      }
+      return res.text();
+    })
     .then(xmlText => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
@@ -528,7 +536,8 @@ export function item_select() {
       return items.map(item => ({
         id: item.getElementsByTagNameNS("*", "itemId")[0]?.textContent,
         name: item.getElementsByTagNameNS("*", "itemName")[0]?.textContent,
-        category: item.getElementsByTagNameNS("*", "itemDescription")[0]?.textContent,
+        category:
+          item.getElementsByTagNameNS("*", "itemDescription")[0]?.textContent,
         points: Number(
           item.getElementsByTagNameNS("*", "itemPrice")[0]?.textContent || 0
         ),

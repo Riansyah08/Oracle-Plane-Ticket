@@ -3,15 +3,17 @@ import { Award } from "lucide-react";
 import { getTierColor } from "../utils/helpers";
 import { purchaseItem } from "../utils/fetch";
 
-function RewardsPage({ user, rewardItems, updateUser, addTransaction }) {
+function RewardsPage({ user, rewardItems, updateUser }) {
   const handleRedeemItem = async (item) => {
     const tierOrder = ["Silver", "Gold", "Platinum"];
 
+    // ❌ insufficient points
     if (user.points_balance < item.points) {
       alert("Insufficient points balance!");
       return;
     }
 
+    // ❌ tier restriction
     if (
       tierOrder.indexOf(user.account_tier) <
       tierOrder.indexOf(item.tier)
@@ -22,7 +24,7 @@ function RewardsPage({ user, rewardItems, updateUser, addTransaction }) {
 
     const prevPoints = user.points_balance;
 
-    // optimistic update
+    // ✅ optimistic update
     updateUser({
       ...user,
       points_balance: user.points_balance - item.points
@@ -30,24 +32,15 @@ function RewardsPage({ user, rewardItems, updateUser, addTransaction }) {
 
     try {
       await purchaseItem({
-        id: user.user_id,
+        id: user.user_id,   // maps to <UserAccID>
         email: user.email,
-        itemId: item.id,
-        amount: 1
-      });
-
-      addTransaction({
-        id: crypto.randomUUID(),
-        user_id: user.user_id,
-        type: "Reward Redemption",
-        description: item.name,
-        points: -item.points,
-        amount: 0,
-        date: new Date().toISOString()
+        itemId: item.id,    // ✅ FIXED
+        amount: 1           // ✅ FIXED
       });
 
       alert(`${item.name} redeemed successfully!`);
     } catch (err) {
+      // rollback on failure
       updateUser({ ...user, points_balance: prevPoints });
       alert("Redemption failed");
       console.error(err);
