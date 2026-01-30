@@ -97,9 +97,9 @@ function BookFlightPage({ user }) {
     const payload = {
       user_id: user.user_id,
       email: user.email,
-      planeaddress_from: flight.planeAddressFrom,
-      planeaddress_to: flight.planeAddressTo,
-      plane_seat: flight.seat // ✅ NEW
+      planeAddressFrom: flight.planeAddressFrom,
+      planeAddressTo: flight.planeAddressTo,
+      planeSeat: flight.seat // ✅ NEW
     };
 
     await purchasePlane(payload);
