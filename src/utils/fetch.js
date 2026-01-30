@@ -280,7 +280,7 @@ export function purchasePlane(newTransaction) {
       <ns2:Amount></ns2:Amount>
     </ns2:PointRedeemRq>
     <ns2:UserInformationRq>
-      <ns2:UserAccID>${newTransaction.id}</ns2:UserAccID>
+      <ns2:UserAccID>${newTransaction.user_id}</ns2:UserAccID>
       <ns2:Email>${newTransaction.email}</ns2:Email>
       <ns2:planeAddressFrom>${newTransaction.planeAddressFrom}</ns2:planeAddressFrom>
       <ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>
