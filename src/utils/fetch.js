@@ -262,8 +262,8 @@ export function purchasePlane(newTransaction) {
       <ns2:UserAccID></ns2:UserAccID>
       <ns2:Email></ns2:Email>
     </ns2:TransactionLogDisplayRq>
-    <ns2:FullName></ns2:FullName>
-    </ns2:UserInsertRq>
+    <ns2:UserInsertRq>
+      <ns2:FullName></ns2:FullName>
       <ns2:PasswordHash></ns2:PasswordHash>
       <ns2:PhoneNum></ns2:PhoneNum>
       <ns2:PointsBalance></ns2:PointsBalance>
