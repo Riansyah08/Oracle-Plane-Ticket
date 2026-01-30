@@ -301,14 +301,6 @@ export function purchasePlane(newTransaction) {
   },
     body: payloadPlane
  })
-        .then(response => {
-        if (!response.ok) {
-            // Handle HTTP errors
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        // If you expect an XML response, you would process it here
-        return response.text(); // Get the response body as text
-    })
     .then(xmlText => {
         // Process the XML response text
         console.log('Success (XML response text):', xmlText);
