@@ -14,6 +14,10 @@ function BookFlightPage({ user }) {
 
   const [loading, setLoading] = useState(false);
 
+  const [showSeatPicker, setShowSeatPicker] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [selectedSeat, setSelectedSeat] = useState(null);
+
   /* ---------------- Helpers ---------------- */
   const normalize = v => v?.trim().toLowerCase();
 
@@ -87,28 +91,27 @@ function BookFlightPage({ user }) {
 
   /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (flight) => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const payload = {
-        user_id: user.user_id,
-        email: user.email,
-        planeaddress_from: flight.planeAddressFrom,
-        planeaddress_to: flight.planeAddressTo,
-        planeschedule_departs: flight.planeschedule_departs,
-        planeschedule_arrive: flight.planeschedule_arrive
-      };
+    const payload = {
+      user_id: user.user_id,
+      email: user.email,
+      planeaddress_from: flight.planeAddressFrom,
+      planeaddress_to: flight.planeAddressTo,
+      plane_seat: flight.seat // ✅ NEW
+    };
 
-      await purchasePlane(payload);
+    await purchasePlane(payload);
 
-      alert('✈️ Flight purchased successfully!');
-    } catch (err) {
-      console.error(err);
-      alert('❌ Failed to purchase flight.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    alert(`✈️ Flight purchased successfully! Seat ${flight.seat}`);
+  } catch (err) {
+    console.error(err);
+    alert('❌ Failed to purchase flight.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -218,7 +221,11 @@ function BookFlightPage({ user }) {
                       Rp {flight.price.toLocaleString()}
                     </p>
                     <button
-                      onClick={() => handlePurchaseFlight(flight)}
+                      onClick={() => {
+                        setSelectedFlight(flight);
+                        setSelectedSeat(null);
+                        setShowSeatPicker(true);
+                      }}
                       disabled={loading}
                       className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-semibold disabled:opacity-50"
                     >
@@ -235,6 +242,65 @@ function BookFlightPage({ user }) {
           <p className="text-gray-500 text-center">
             No flights found for this route.
           </p>
+        )}
+
+        {showSeatPicker && selectedFlight && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
+
+              <h3 className="text-xl font-bold mb-4">
+                Select Seat
+              </h3>
+
+              <p className="text-gray-600 mb-4">
+                {selectedFlight.planeAddressFrom} → {selectedFlight.planeAddressTo}
+              </p>
+
+              {/* Seat grid */}
+              <div className="grid grid-cols-6 gap-2 max-h-64 overflow-y-auto mb-6">
+                {Array.from({ length: 180 }, (_, i) => i + 1).map(seat => (
+                  <button
+                    key={seat}
+                    onClick={() => setSelectedSeat(seat)}
+                    className={`py-2 rounded border text-sm font-semibold transition
+                      ${
+                        selectedSeat === seat
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 hover:bg-gray-200"
+                      }
+                    `}
+                  >
+                    {seat}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Actions */}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowSeatPicker(false)}
+                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              
+                <button
+                  disabled={!selectedSeat || loading}
+                  onClick={async () => {
+                    await handlePurchaseFlight({
+                      ...selectedFlight,
+                      seat: selectedSeat
+                    });
+                    setShowSeatPicker(false);
+                  }}
+                  className="px-6 py-2 rounded bg-green-600 text-white font-semibold disabled:opacity-50"
+                >
+                  Confirm Purchase
+                </button>
+              </div>
+                
+            </div>
+          </div>
         )}
       </div>
     </div>
