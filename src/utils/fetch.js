@@ -321,7 +321,7 @@ export function PlaneSearch() {
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
       <soap:Body>
         <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSchedule"
-                   xmlns:ns2="http://www.permatabank.com/UserSystem">
+            xmlns:ns2="http://www.permatabank.com/UserSystem">
           <ns2:PlaneScheduleRq></ns2:PlaneScheduleRq>
         </ns1:start>
       </soap:Body>
@@ -500,21 +500,37 @@ export function Transactionlog({ email, userAccID }) {
 });
 }
 
-export function item_select(){
-  const planeschedulepayload = `
-    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-      <soap:Body>
-        <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/SelectTransaction" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
-        <ns2:PurchaseRq>
-          <ns2:UserAccID></ns2:UserAccID>
-          <ns2:Email></ns2:Email>
-          <ns2:ItemID></ns2:ItemID>
-          <ns2:ItemCount></ns2:ItemCount>
-        </ns2:PurchaseRq>
-        </ns1:start>
-      </soap:Body>
-    </soap:Envelope>
+// utils/fetch.js
+export function item_select() {
+  const payload = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+      <soapenv:Body/>
+    </soapenv:Envelope>
   `;
 
-  return fetch()
-};
+  return fetch(ITEMLIST_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      Accept: "text/xml"
+    },
+    body: payload
+  })
+    .then(res => res.text())
+    .then(xmlText => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+      const items = Array.from(
+        xmlDoc.getElementsByTagNameNS("*", "Items")
+      );
+
+      return items.map(item => ({
+        id: Number(item.getElementsByTagNameNS("*", "itemId")[0]?.textContent),
+        name: item.getElementsByTagNameNS("*", "itemName")[0]?.textContent,
+        category: item.getElementsByTagNameNS("*", "itemDescription")[0]?.textContent,
+        points: Number(item.getElementsByTagNameNS("*", "itemPrice")[0]?.textContent || 0),
+        tier: mapTier(item.getElementsByTagNameNS("*", "minTier")[0]?.textContent)
+      }));
+    });
+}
