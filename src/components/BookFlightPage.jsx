@@ -103,7 +103,10 @@ function BookFlightPage({ user }) {
     };
     console.log("FINAL payload to SOAP:", payload);
     await purchasePlane(payload);
-
+    updateUser({
+      ...user,
+      points_balance: user.points_balance + 100
+    });
     alert(`✈️ Flight purchased successfully! Seat ${tx.seat}`);
   } catch (err) {
     console.error(err);
