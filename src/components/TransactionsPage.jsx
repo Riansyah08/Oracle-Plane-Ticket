@@ -6,6 +6,8 @@ function TransactionsPage({ user }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const isBuyTicket = tx.type === "Buy Ticket";
+  const displayPoints = isBuyTicket ? 100 : tx.points;
 
   useEffect(() => {
     if (!user?.user_id || !user?.email) return;
@@ -72,11 +74,11 @@ function TransactionsPage({ user }) {
                 <div className="text-right">
                   <p
                     className={`text-2xl font-bold ${
-                      tx.points > 0 ? "text-green-600" : "text-red-600"
+                      isBuyTicket ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    {tx.points > 0 ? "+" : ""}
-                    {tx.points} pts
+                    {isBuyTicket ? "+" : "-"}
+                    {displayPoints} pts
                   </p>
 
                   {tx.amount > 0 && (
