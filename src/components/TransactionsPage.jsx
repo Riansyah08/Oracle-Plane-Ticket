@@ -6,7 +6,7 @@ function TransactionsPage({ user }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isBuyTicket = tx.type === "Buy Ticket";
+  const isBuyTicket = tx.type === "BUY TICKET";
   const displayPoints = isBuyTicket ? 100 : tx.points;
 
   useEffect(() => {
