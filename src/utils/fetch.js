@@ -541,12 +541,7 @@ export function item_select() {
     },
     body: payload
   })
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`Item select failed: ${res.status}`);
-      }
-      return res.text();
-    })
+    .then(res => res.text())
     .then(xmlText => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
@@ -558,8 +553,7 @@ export function item_select() {
       return items.map(item => ({
         id: item.getElementsByTagNameNS("*", "itemId")[0]?.textContent,
         name: item.getElementsByTagNameNS("*", "itemName")[0]?.textContent,
-        category:
-          item.getElementsByTagNameNS("*", "itemDescription")[0]?.textContent,
+        category: item.getElementsByTagNameNS("*", "itemDescription")[0]?.textContent,
         points: Number(
           item.getElementsByTagNameNS("*", "itemPrice")[0]?.textContent || 0
         ),
@@ -568,4 +562,17 @@ export function item_select() {
         )  
       }));
     });
+}
+
+function mapTier(dbTier) {
+  switch (dbTier?.trim()) {
+    case "T3":
+      return "Platinum";
+    case "T2":
+      return "Gold";
+    case "T1":
+      return "Silver";
+    default:
+      return "Silver";
+  }
 }
