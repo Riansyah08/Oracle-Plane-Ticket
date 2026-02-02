@@ -1,6 +1,6 @@
 import React from "react";
 import { Award } from "lucide-react";
-import { getTierColor } from "../utils/helpers";
+import { getTierColor,getbuttoncolour } from "../utils/helpers";
 import { purchaseItem } from "../utils/fetch";
 
 function RewardsPage({ user, rewardItems, updateUser }) {
@@ -11,9 +11,8 @@ function RewardsPage({ user, rewardItems, updateUser }) {
       alert("Insufficient points balance!");
       return;
     }
-
     if (
-      tierOrder.indexOf(user.account_tier) <
+      tierOrder.indexOf(user.tier_name) <
       tierOrder.indexOf(item.tier)
     ) {
       alert(`This reward requires ${item.tier} tier or higher!`);
@@ -73,7 +72,7 @@ function RewardsPage({ user, rewardItems, updateUser }) {
 
                 <button
                   onClick={() => handleRedeemItem(item)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                  className={`${getbuttoncolour(user.points_balance < item.points)}`}
                 >
                    Redeem
                 </button>

@@ -194,7 +194,7 @@ export function purchaseItem(newTransaction) {
       <ns2:Email></ns2:Email>
     </ns2:TransactionLogDisplayRq>
     <ns2:UserInsertRq>
-      <ns2:UserAccID><ns2:UserAccID/>
+      <ns2:UserAccID></ns2:UserAccID>
       <ns2:FullName></ns2:FullName>
       <ns2:PasswordHash></ns2:PasswordHash>
       <ns2:PhoneNum></ns2:PhoneNum>
@@ -204,7 +204,7 @@ export function purchaseItem(newTransaction) {
       <ns2:KmHit></ns2:KmHit>
     </ns2:UserInsertRq>
     <ns2:PointRedeemRq>
-        <ns2:UserAccID>${newTransaction.id}</ns2:UserAccID>
+        <ns2:UserAccID>${newTransaction.user_id}</ns2:UserAccID>
         <ns2:Email>${newTransaction.email}</ns2:Email>
         <ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
         <ns2:Amount>${newTransaction.amount}</ns2:Amount>
@@ -505,7 +505,6 @@ export function Transactionlog({ email, userAccID }) {
 export function item_select() {
   const mapTier = (tier) => {
   if (!tier) return null;
-
   switch (tier.trim()) {
     case "T1":
       return "Silver";
@@ -562,17 +561,4 @@ export function item_select() {
         )  
       }));
     });
-}
-
-function mapTier(dbTier) {
-  switch (dbTier?.trim()) {
-    case "T3":
-      return "Platinum";
-    case "T2":
-      return "Gold";
-    case "T1":
-      return "Silver";
-    default:
-      return "Silver";
-  }
 }
