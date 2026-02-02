@@ -2,12 +2,10 @@ import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { Transactionlog } from "../utils/fetch";
 
-function TransactionsPage({ user, tx }) {
+function TransactionsPage({ user }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isBuyTicket = tx.type === "BUY TICKET";
-  const displayPoints = isBuyTicket ? 100 : tx.points;
 
   useEffect(() => {
     if (!user?.user_id || !user?.email) return;
@@ -57,7 +55,10 @@ function TransactionsPage({ user, tx }) {
             </p>
           )}
 
-          {sortedTransactions.map(tx => (
+          {sortedTransactions.map(tx => {
+            const isBuyTicket = tx.type === "BUY TICKET"  
+            const displayPoints = isBuyTicket ? 100 : tx.points;
+            return (
             <div
               key={tx.id}
               className="border rounded-lg p-5 hover:shadow-md transition"
@@ -89,7 +90,7 @@ function TransactionsPage({ user, tx }) {
                 </div>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </div>
