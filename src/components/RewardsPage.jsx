@@ -71,13 +71,14 @@ function RewardsPage({ user, rewardItems, updateUser }) {
                   <p className={`text-sm ${getTierColor(item.tier)}`}>
                     {item.tier} Tier
                   </p>
+                  <p>{item.points} pts</p>
                 </div>
 
                 <button
                   onClick={() => handleRedeemItem(item)}
                   className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
                 >
-                  {item.points} pts
+                   Redeem
                 </button>
               </div>
             </div>

@@ -183,6 +183,7 @@ export function Register(formData) {
 
 /* ================= PURCHASE ITEM ================= */
 export function purchaseItem(newTransaction) {
+  console.log("newTransaction:", newTransaction);
   const payloadItems = `
   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -502,13 +503,34 @@ export function Transactionlog({ email, userAccID }) {
 
 // utils/fetch.js
 export function item_select() {
+  const mapTier = (tier) => {
+  if (!tier) return null;
+
+  switch (tier.trim()) {
+    case "T1":
+      return "Silver";
+    case "T2":
+      return "Gold";
+    case "T3":
+      return "Platinum";
+    default:
+      return tier;
+  }
+};
+
   const payload = `
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:bind="http://www.permatabank.com/UserSystem">
-  <soapenv:Body>
-    <bind:ItemSelectRq/>
-  </soapenv:Body>
-</soapenv:Envelope>
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/SelectTransaction" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
+        <ns2:PurchaseRq>
+          <ns2:UserAccID/>
+          <ns2:Email/>
+          <ns2:ItemID/>
+          <ns2:ItemCount/>
+        </ns2:PurchaseRq>
+      </ns1:start>
+    </soap:Body>
+  </soap:Envelope>
 `;
 
   return fetch(ITEMLIST_URL, {
@@ -542,8 +564,8 @@ export function item_select() {
           item.getElementsByTagNameNS("*", "itemPrice")[0]?.textContent || 0
         ),
         tier: mapTier(
-          item.getElementsByTagNameNS("*", "minTier")[0]?.textContent
-        )
+          item.getElementsByTagNameNS("*", "minTier")[0]?.textContent || 0
+        )  
       }));
     });
 }
