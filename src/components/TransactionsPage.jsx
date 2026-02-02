@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { Transactionlog } from "../utils/fetch";
 
-function TransactionsPage({ user }) {
+function TransactionsPage({ user, tx }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
