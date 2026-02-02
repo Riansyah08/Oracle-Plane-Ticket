@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
 
-function BookFlightPage({ user }) {
+function BookFlightPage({ user, updateUser }) {
   const [allFlights, setAllFlights] = useState([]);
   const [filteredFlights, setFilteredFlights] = useState([]);
 
@@ -102,13 +102,16 @@ function BookFlightPage({ user }) {
       planeSeat: tx.seat
     };
     console.log("FINAL payload to SOAP:", payload);
+    
     await purchasePlane(payload);
     updateUser({
       ...user,
       points_balance: user.points_balance + 100
     });
     alert(`✈️ Flight purchased successfully! Seat ${tx.seat}`);
+
   } catch (err) {
+    updateUser({ ...user, points_balance: prevPoints });
     console.error(err);
     alert('❌ Failed to purchase flight.');
   } finally {
