@@ -95,8 +95,8 @@ function BookFlightPage({ user, updateUser }) {
     setLoading(true);
 
     const payload = {
-      user_id: user.user_id,
       email: user.email,
+      password: user.password,
       planeAddressFrom: tx.planeAddressFrom,
       planeAddressTo: tx.planeAddressTo,
       planeSeat: tx.seat
@@ -106,7 +106,7 @@ function BookFlightPage({ user, updateUser }) {
     await purchasePlane(payload);
     updateUser({
       ...user,
-      points_balance: user.points_balance + 100
+      points_balance: user.points_balance + 3000
     });
     alert(`✈️ Flight purchased successfully! Seat ${tx.seat}`);
 

@@ -29,8 +29,8 @@ function RewardsPage({ user, rewardItems, updateUser }) {
 
     try {
       await purchaseItem({
-        user_id: user.user_id,
         email: user.email,
+        password: user.password,
         itemId: item.id,
         amount: 1
       });

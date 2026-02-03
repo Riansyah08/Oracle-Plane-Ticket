@@ -29,7 +29,7 @@ function App() {
       // 📜 Load transactions
       const txs = await Transactionlog({
         email: user.email,
-        userAccID: user.user_id
+        password: user.password
       });
       setTransactions(txs);
     } catch (err) {
@@ -90,6 +90,7 @@ function App() {
             <TransactionsPage
               user={currentUser}
               transactions={transactions}
+              rewardItems={rewardItems}
             />
           )}
         </div>

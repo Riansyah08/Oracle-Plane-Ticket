@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { Transactionlog } from "../utils/fetch";
+import {item_select} from "../utils/fetch";
 
-function TransactionsPage({ user }) {
+function TransactionsPage({ user, rewardItems }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user?.user_id || !user?.email) return;
+    if (!user?.password || !user?.email) return;
 
     setLoading(true);
     setError(null);
 
     Transactionlog({
-      userAccID: user.user_id, // ✅ FIXED
-      email: user.email
+      email: user.email,
+      password: user.password // ✅ FIXED
     })
       .then(data => {
         console.log("Fetched transactions:", data); // debug
@@ -57,7 +58,10 @@ function TransactionsPage({ user }) {
 
           {sortedTransactions.map(tx => {
             const isBuyTicket = tx.type === "BUY TICKET"  
-            const displayPoints = isBuyTicket ? 100 : tx.points;
+            const matchedItem = rewardItems.find(
+              item => item.name === tx.item_name
+            );
+            const displayPoints = isBuyTicket ? 3000 : matchedItem?.points ?? Math.abs(tx.points);
             return (
             <div
               key={tx.id}

@@ -19,8 +19,8 @@ function LoginPage({ onLogin }) {
     setLoading(true);
     try {
       const user = await loginUser({
-        userAccID: formData.userAccID,
-        email: formData.email
+        email: formData.email,
+        password: formData.password
       });
 
       if (!user) {
@@ -85,16 +85,17 @@ function LoginPage({ onLogin }) {
         {isLogin ? (
           <>
             <Input
-              label="User Account ID"
-              value={formData.userAccID}
-              onChange={v => setFormData({ ...formData, userAccID: v })}
-            />
-
-            <Input
               label="Email"
               type="email"
               value={formData.email}
               onChange={v => setFormData({ ...formData, email: v })}
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              value={formData.password}
+              onChange={v => setFormData({ ...formData, password: v })}
             />
 
             <button

@@ -38,8 +38,8 @@ export function loginUser(formData) {
     </ns2:UserInformationRq>
     <user_options>Login</user_options>
      <ns2:UserSelectRq>
-      <ns2:UserAccID>${formData.userAccID}</ns2:UserAccID>
       <ns2:Email>${formData.email}</ns2:Email>
+      <ns2:PasswordHash>${formData.password}</ns2:PasswordHash>
     </ns2:UserSelectRq>
   </ns1:start>
 </soap:Body>
@@ -76,21 +76,6 @@ if (statusCode !== "00") {
   throw new Error(statusDesc || "Login failed");
 }
 
-const returnedUserId =
-  userNode.getElementsByTagNameNS("*", "UserAccID")[0]?.textContent;
-
-const returnedEmail =
-  userNode.getElementsByTagNameNS("*", "Email")[0]?.textContent;
-
-// 🔴 CRITICAL MATCH CHECK
-if (
-  !returnedUserId ||
-  !returnedEmail ||
-  String(returnedUserId) !== String(formData.userAccID) ||
-  returnedEmail !== formData.email
-) {
-  throw new Error("Invalid User ID or Email");
-}
       // ✅ SUCCESS
       return {
         user_id: userNode.getElementsByTagNameNS("*", "UserAccID")[0]?.textContent,
@@ -98,6 +83,7 @@ if (
         email: userNode.getElementsByTagNameNS("*", "Email")[0]?.textContent,
         phone_number: userNode.getElementsByTagNameNS("*", "PhoneNum")[0]?.textContent,
         join_date: userNode.getElementsByTagNameNS("*", "JoinDate")[0]?.textContent,
+        password: formData.password,
         points_balance: Number(
           userNode.getElementsByTagNameNS("*", "PointsBalance")[0]?.textContent || 0
         ),
@@ -145,6 +131,10 @@ export function Register(formData) {
       <ns2:planeSeat></ns2:planeSeat>
     </ns2:UserInformationRq>
     <user_options>Account</user_options>
+     <ns2:UserSelectRq>
+      <ns2:Email></ns2:Email>
+      <ns2:PasswordHash></ns2:PasswordHash>
+    </ns2:UserSelectRq>
     </ns1:start>
 </soap:Body>
 </soap:Envelope>
@@ -204,8 +194,8 @@ export function purchaseItem(newTransaction) {
       <ns2:KmHit></ns2:KmHit>
     </ns2:UserInsertRq>
     <ns2:PointRedeemRq>
-        <ns2:UserAccID>${newTransaction.user_id}</ns2:UserAccID>
         <ns2:Email>${newTransaction.email}</ns2:Email>
+        <ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
         <ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
         <ns2:Amount>${newTransaction.amount}</ns2:Amount>
     </ns2:PointRedeemRq>
@@ -217,6 +207,10 @@ export function purchaseItem(newTransaction) {
       <ns2:planeSeat></ns2:planeSeat>
     </ns2:UserInformationRq>
     <user_options>Redeem</user_options>
+     <ns2:UserSelectRq>
+      <ns2:Email></ns2:Email>
+      <ns2:PasswordHash></ns2:PasswordHash>
+    </ns2:UserSelectRq>
     </ns1:start>
   </soap:Body>
   </soap:Envelope>
@@ -281,13 +275,17 @@ export function purchasePlane(newTransaction) {
       <ns2:Amount></ns2:Amount>
     </ns2:PointRedeemRq>
     <ns2:UserInformationRq>
-      <ns2:UserAccID>${newTransaction.user_id}</ns2:UserAccID>
       <ns2:Email>${newTransaction.email}</ns2:Email>
+      <ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
       <ns2:planeAddressFrom>${newTransaction.planeAddressFrom}</ns2:planeAddressFrom>
       <ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>
       <ns2:planeSeat>${newTransaction.planeSeat}</ns2:planeSeat>
     </ns2:UserInformationRq>
     <user_options>Purchase</user_options>
+     <ns2:UserSelectRq>
+      <ns2:Email></ns2:Email>
+      <ns2:PasswordHash></ns2:PasswordHash>
+    </ns2:UserSelectRq>
     </ns1:start>
 </soap:Body>
 </soap:Envelope>
@@ -398,15 +396,15 @@ export function PlaneSearch() {
 }
 
 /* ================= TRANSACTION LOG ================= */
-export function Transactionlog({ email, userAccID }) {
+export function Transactionlog({ email, password }) {
   const payloadLog = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 <soap:Body>  
   <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
     <Status_Code></Status_Code>
     <ns2:TransactionLogDisplayRq>
-      <ns2:UserAccID>${userAccID}</ns2:UserAccID>
       <ns2:Email>${email}</ns2:Email>
+      <ns2:PasswordHash>${password}</ns2:PasswordHash>
     </ns2:TransactionLogDisplayRq>
     <ns2:UserInsertRq>
     <ns2:FullName></ns2:FullName>
@@ -431,6 +429,10 @@ export function Transactionlog({ email, userAccID }) {
       <ns2:planeSeat></ns2:planeSeat>
     </ns2:UserInformationRq>
     <user_options>Log_Display</user_options>
+     <ns2:UserSelectRq>
+      <ns2:Email></ns2:Email>
+      <ns2:PasswordHash></ns2:PasswordHash>
+    </ns2:UserSelectRq>
     </ns1:start>
 </soap:Body>
 </soap:Envelope>
