@@ -42,14 +42,14 @@ function TransactionsPage({ user, rewardItems }) {
   );
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold mb-6 flex items-center">
           <History className="w-7 h-7 mr-2 text-gray-600" />
           Transaction History
         </h2>
 
-        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-188 overflow-y-auto pr-2">
           {sortedTransactions.length === 0 && (
             <p className="text-gray-500 text-center">
               No transactions found

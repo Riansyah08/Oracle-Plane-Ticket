@@ -36,7 +36,7 @@ function HomePage({ user, onNavigate }) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <div className="bg-purple-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-600">Points Balance</p>
+            <p className="text-sm text-gray-600">Member Points</p>
             <p className="text-lg font-bold text-purple-600">{user.points_balance.toLocaleString()}</p>
           </div>
           <div className="bg-orange-50 p-3 rounded-lg">

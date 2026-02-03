@@ -7,7 +7,8 @@ function Navbar({ onNavigate, onLogout }) {
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Plane className="w-8 h-8 mr-2" />
-          <span className="text-2xl font-bold">OracleSky Portal</span>
+          <span className="text-2xl font-bold cursor-pointer" 
+            onClick={() => onNavigate('home')} >OracleSky Portal</span>
         </div>
         <div className="flex gap-4">
           <button 

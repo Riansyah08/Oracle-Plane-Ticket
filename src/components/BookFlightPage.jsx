@@ -120,7 +120,7 @@ function BookFlightPage({ user, updateUser }) {
 };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold mb-6 flex items-center">
           <ShoppingCart className="w-7 h-7 mr-2 text-blue-600" />
@@ -196,7 +196,7 @@ function BookFlightPage({ user, updateUser }) {
           <div>
             <h3 className="text-xl font-bold mb-4">Available Flights</h3>
 
-            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-133 overflow-y-auto pr-2">
               {filteredFlights.map(flight => (
                 <div
                   key={flight.plane_id}

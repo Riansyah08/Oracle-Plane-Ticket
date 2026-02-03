@@ -58,7 +58,7 @@ function RewardsPage({ user, rewardItems, updateUser }) {
           </span>
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-178 overflow-y-auto pr-2">
           {rewardItems.map(item => (
             <div key={item.id} className="border rounded-lg p-5">
               <div className="flex justify-between">
