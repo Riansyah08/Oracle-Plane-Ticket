@@ -68,7 +68,7 @@ function HomePage({ user, onNavigate }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
           onClick={() => onNavigate('purchase')}
-          className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1"
+          className="bg-white rounded-xl shadow-lg p-6 min-w-[300px] min-h-[300px]hover:shadow-xl transition transform hover:-translate-y-1"
         >
           <ShoppingCart className="w-12 h-12 text-blue-600 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-800 mb-1">Book Flight</h3>
@@ -77,7 +77,7 @@ function HomePage({ user, onNavigate }) {
 
         <button
           onClick={() => onNavigate('redeem')}
-          className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1"
+          className="bg-white rounded-xl shadow-lg p-6 min-w-[300px] min-h-[300px] hover:shadow-xl transition transform hover:-translate-y-1"
         >
           <Award className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-800 mb-1">Rewards</h3>
@@ -86,7 +86,7 @@ function HomePage({ user, onNavigate }) {
 
         <button
           onClick={() => onNavigate('transactions')}
-          className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1"
+          className="bg-white rounded-xl shadow-lg p-6 min-w-[300px] min-h-[300px] hover:shadow-xl transition transform hover:-translate-y-1"
         >
           <History className="w-12 h-12 text-gray-600 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-800 mb-1">Transactions</h3>
