@@ -72,7 +72,7 @@ function RewardsPage({ user, rewardItems, updateUser }) {
 
                 <button
                   onClick={() => handleRedeemItem(item)}
-                  className={`${getbuttoncolour(user.points_balance < item.points)} rounded-lg max-h-15 font-semibold`}
+                  className={`${getbuttoncolour(user.points_balance < item.points)} rounded-lg max-h-15 font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:bg-green-400`}
                 >
                    Redeem
                 </button>

@@ -64,7 +64,7 @@ function App() {
       <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} />
 
       <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-4">
           {currentPage === "home" && (
             <HomePage user={currentUser} onNavigate={setCurrentPage} />
           )}
