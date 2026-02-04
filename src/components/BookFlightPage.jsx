@@ -97,6 +97,7 @@ function BookFlightPage({ user, updateUser }) {
     const payload = {
       email: user.email,
       password: user.password,
+      planeId: tx.planeId,
       planeAddressFrom: tx.planeAddressFrom,
       planeAddressTo: tx.planeAddressTo,
       planeSeat: tx.seat
@@ -295,7 +296,8 @@ function BookFlightPage({ user, updateUser }) {
                   onClick={async () => {
                     await handlePurchaseFlight({
                       ...selectedFlight,
-                      seat: selectedSeat
+                      seat: selectedSeat,
+                      planeId: selectedFlight.plane_id
                     });
                     setShowSeatPicker(false);
                   }}
