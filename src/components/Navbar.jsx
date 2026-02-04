@@ -18,6 +18,24 @@ function Navbar({ onNavigate, onLogout }) {
             Home
           </button>
           <button 
+            onClick={() => onNavigate('purchase')} 
+            className="hover:bg-blue-700 px-4 py-2 rounded"
+          >
+            Buy Ticket
+          </button>
+          <button 
+            onClick={() => onNavigate('redeem')} 
+            className="hover:bg-blue-700 px-4 py-2 rounded"
+          >
+            Redeem
+          </button>
+          <button 
+            onClick={() => onNavigate('transactions')} 
+            className="hover:bg-blue-700 px-4 py-2 rounded"
+          >
+            Transactions
+          </button>
+          <button 
             onClick={onLogout} 
             className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
           >

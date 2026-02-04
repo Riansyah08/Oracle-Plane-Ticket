@@ -60,7 +60,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+    <div className="h-screen flex flex-col bg-indigo-200 overflow-hidden">
       <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} />
 
       <div className="flex-1 overflow-y-auto">

@@ -223,7 +223,7 @@ function BookFlightPage({ user, updateUser }) {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-gray-700 font-semibold mb-2">
+                    <p className="text-gray-700 font-semibold mb-5">
                       Rp {flight.price.toLocaleString()}
                     </p>
                     <button

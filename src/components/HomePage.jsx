@@ -15,7 +15,7 @@ import { getTierColor } from '../utils/helpers';
 function HomePage({ user, onNavigate }) {
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div className="bg-white rounded-xl shadow-lg p-18 mb-10">
         <div className="flex items-center mb-4">
           <User className="w-10 h-10 text-blue-600 mr-3" />
           <h2 className="text-2xl font-bold">Welcome, {user.full_name}!</h2>
@@ -37,15 +37,15 @@ function HomePage({ user, onNavigate }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <div className="bg-purple-50 p-3 rounded-lg">
             <p className="text-sm text-gray-600">Member Points</p>
-            <p className="text-lg font-bold text-purple-600">{user.points_balance.toLocaleString()}</p>
+            <p className="text-lg font-bold text-orange-600">{user.points_balance.toLocaleString()}</p>
           </div>
           <div className="bg-orange-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-600">KM Hit</p>
-            <p className="text-lg font-bold text-orange-600">{user.km_hit.toLocaleString()} km</p>
+            <p className="text-sm text-gray-600">Miles Hit</p>
+            <p className="text-lg font-bold text-red-600">{user.km_hit.toLocaleString()} km</p>
           </div>
           <div className="bg-pink-50 p-3 rounded-lg">
             <p className="text-sm text-gray-600">Member Since</p>
-            <p className="text-lg font-bold text-pink-600">{formatDateTime(user.join_date)}</p>
+            <p className="text-lg font-bold text-black">{formatDateTime(user.join_date)}</p>
           </div>
         </div>
 

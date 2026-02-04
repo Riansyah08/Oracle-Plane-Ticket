@@ -9,7 +9,7 @@ export const getTierColor = (tier) => {
 
 export const getbuttoncolour = (compareresult) => {
   switch(compareresult){
-    case false : return 'bg-yellow-300 text-white-700 px-6 py-4 rounded hover:bg-blue-600';
-    case true : return 'bg-gray-300 text-gray-700 px-6 py-4 rounded hover:bg-gary-600';
+    case false : return 'bg-blue-500 text-white px-6 py-4 rounded hover:bg-blue-600';
+    case true : return 'bg-gray-300 text-gray px-6 py-4 rounded hover:bg-gray-600';
   }
 }
