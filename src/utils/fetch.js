@@ -277,6 +277,7 @@ export function purchasePlane(newTransaction) {
     <ns2:UserInformationRq>
       <ns2:Email>${newTransaction.email}</ns2:Email>
       <ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
+      <ns2:planeId>${newTransaction.planeId}</ns2:planeId>
       <ns2:planeAddressFrom>${newTransaction.planeAddressFrom}</ns2:planeAddressFrom>
       <ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>
       <ns2:planeSeat>${newTransaction.planeSeat}</ns2:planeSeat>
