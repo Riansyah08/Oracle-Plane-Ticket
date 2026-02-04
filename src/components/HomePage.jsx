@@ -89,7 +89,7 @@ function HomePage({ user, onNavigate }) {
              transition-all duration-300 transform
              hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600"
         >
-          <Award className="w-12 h-12 text-blue-600 mx-auto mb-3
+          <Award className="w-12 h-12 text-blue-600 mx-auto mb-3 text-yellow-600
                transition-colors duration-300
                group-hover:text-white" />
           <h3 className="text-xl font-bold text-gray-800 mb-1
@@ -103,10 +103,10 @@ function HomePage({ user, onNavigate }) {
         <button
           onClick={() => onNavigate('transactions')}
           className="group bg-white rounded-xl shadow-lg p-6 min-w-[300px] min-h-[300px]
-             transition-all duration-300 transform
+             transition-all duration-300 transform 
              hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600"
         >
-          <History className="w-12 h-12 text-blue-600 mx-auto mb-3
+          <History className="w-12 h-12 text-blue-600 mx-auto mb-3 text-gray-600
                transition-colors duration-300
                group-hover:text-white" />
           <h3 className="text-xl font-bold text-gray-800 mb-1
