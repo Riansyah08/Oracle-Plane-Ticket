@@ -72,9 +72,15 @@ function HomePage({ user, onNavigate }) {
              transition-all duration-300 transform
              hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600"
         >
-          <ShoppingCart className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-          <h3 className="text-xl font-bold text-gray-800 mb-1">Book Flight</h3>
-          <p className="text-sm text-gray-600">Search and purchase flight tickets</p>
+          <ShoppingCart className="w-12 h-12 text-blue-600 mx-auto mb-3
+               transition-colors duration-300
+               group-hover:text-white" />
+          <h3 className="text-xl font-bold text-gray-800 mb-1
+               transition-colors duration-300
+               group-hover:text-white">Book Flight</h3>
+          <p className="text-sm text-gray-600
+               transition-colors duration-300
+               group-hover:text-blue-100">Search and purchase flight tickets</p>
         </button>
 
         <button
@@ -83,9 +89,15 @@ function HomePage({ user, onNavigate }) {
              transition-all duration-300 transform
              hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600"
         >
-          <Award className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-          <h3 className="text-xl font-bold text-gray-800 mb-1">Rewards</h3>
-          <p className="text-sm text-gray-600">Redeem your points for rewards</p>
+          <Award className="w-12 h-12 text-blue-600 mx-auto mb-3
+               transition-colors duration-300
+               group-hover:text-white" />
+          <h3 className="text-xl font-bold text-gray-800 mb-1
+               transition-colors duration-300
+               group-hover:text-white">Rewards</h3>
+          <p className="text-sm text-gray-600
+               transition-colors duration-300
+               group-hover:text-blue-100">Redeem your points for rewards</p>
         </button>
 
         <button
@@ -94,9 +106,15 @@ function HomePage({ user, onNavigate }) {
              transition-all duration-300 transform
              hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600"
         >
-          <History className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <h3 className="text-xl font-bold text-gray-800 mb-1">Transactions</h3>
-          <p className="text-sm text-gray-600">View your transaction history</p>
+          <History className="w-12 h-12 text-blue-600 mx-auto mb-3
+               transition-colors duration-300
+               group-hover:text-white" />
+          <h3 className="text-xl font-bold text-gray-800 mb-1
+               transition-colors duration-300
+               group-hover:text-white">Transactions</h3>
+          <p className="text-sm text-gray-600
+               transition-colors duration-300
+               group-hover:text-blue-100">View your transaction history</p>
         </button>
       </div>
     </div>
