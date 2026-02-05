@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/soa-infra': {
-        target: 'http://10.88.183.49:7003', // ⚠ use IPv4, not ::1
+        target: 'http://10.65.255.49:7003', // ⚠ use IPv4, not ::1
         changeOrigin: true,
         secure: false,
       }
