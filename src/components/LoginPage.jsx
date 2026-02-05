@@ -57,7 +57,7 @@ function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4 gap-5">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
 
         <div className="flex items-center justify-center mb-6">
@@ -65,25 +65,31 @@ function LoginPage({ onLogin }) {
           <h1 className="text-3xl font-bold text-gray-800">OracleSky</h1>
         </div>
 
-        <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
-          <button
-            className={`flex-1 py-2 rounded-lg transition ${
-              isLogin ? "bg-white shadow" : ""
-            }`}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button
-            className={`flex-1 py-2 rounded-lg transition ${
-              !isLogin ? "bg-white shadow" : ""
-            }`}
-            onClick={() => setIsLogin(false)}
-          >
-            Register
-          </button>
-        </div>
-
+        <div className="flex mb-6 gap-0.5 bg-gray-100 rounded-lg p-1">
+    <button
+      onClick={() => setIsLogin(true)}
+      className={`
+        flex-1 py-2 rounded-lg
+        transition-colors duration-300
+          ${isLogin
+            ? "bg-blue-600 text-white"
+            : "bg-gray text-gray-700 hover:bg-blue-600 hover:text-white"}
+      `}
+    > Login 
+    </button> 
+    <button
+      onClick={() => setIsLogin(false)}
+        className={`
+            flex-1 py-2 rounded-lg
+              transition-colors duration-300
+              ${!isLogin
+              ? "bg-blue-600 text-white"
+              : "text-gray-700 hover:bg-blue-300 hover:text-white"}
+          `}
+        >
+        Register
+        </button>
+    </div>
         {isLogin ? (
           <>
             <Input
