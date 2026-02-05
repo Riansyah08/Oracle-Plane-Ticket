@@ -1,7 +1,7 @@
 const BPM_URL = "/soa-infra/services/default/BpmProject/MainProccess.service";
 const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
 const Plansesch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
-
+const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -561,6 +561,60 @@ export function item_select() {
         ),
         tier: mapTier(
           item.getElementsByTagNameNS("*", "minTier")[0]?.textContent || 0
+        )  
+      }));
+    });
+}
+
+// utils/fetch.js
+export function ticket_select() {
+  const payload = `
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/SelectTransaction" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
+        <ns2:PurchaseRq>
+          <ns2:UserAccID/>
+          <ns2:Email/>
+          <ns2:ItemID/>
+          <ns2:ItemCount/>
+        </ns2:PurchaseRq>
+      </ns1:start>
+    </soap:Body>
+  </soap:Envelope>
+`;
+
+  return fetch(ITEMLIST_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      Accept: "text/xml"
+    },
+    body: payload
+  })
+    .then(res => res.text())
+    .then(xmlText => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+      const items = Array.from(
+        xmlDoc.getElementsByTagNameNS("*", "PlaneToUser")
+      );
+
+      return items.map(item => ({
+        userid: Number(
+          item.getElementsByTagNameNS("*", "userId")[0]?.textContent
+        ),
+        planeid: Number(
+          item.getElementsByTagNameNS("*", "planeId")[0]?.textContent
+        ),
+        planeseat: Number(
+          item.getElementsByTagNameNS("*", "planeSeat")[0]?.textContent
+        ),
+        flightnumber: Number(
+          item.getElementsByTagNameNS("*", "flightNumber")[0]?.textContent || 0
+        ),
+        pairid: Number(
+          item.getElementsByTagNameNS("*", "pairid")[0]?.textContent || 0
         )  
       }));
     });
