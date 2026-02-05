@@ -13,3 +13,11 @@ export const getbuttoncolour = (compareresult) => {
     case true : return 'bg-gray-300 text-gray px-6 py-4 rounded hover:bg-gray-600';
   }
 }
+
+export const discount = (tier) => {
+  switch(tier) {
+    case 'Platinum': return 0.1;
+    case 'Gold': return 0.05;
+    default: return 1;
+  }
+}
