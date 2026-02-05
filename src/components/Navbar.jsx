@@ -17,7 +17,7 @@ function Navbar({ onNavigate, onLogout }) {
   );
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav className="bg-blue-600 text-white shadow-lg ">
       <div className="container mx-auto p-4 flex justify-between items-center">
         {/* Logo */}
         <div
@@ -48,7 +48,7 @@ function Navbar({ onNavigate, onLogout }) {
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden bg-blue-600 px-4 pb-4 space-y-2">
+        <div className="md:hidden bg-blue-600 px-4 pb-4 space-y-2 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600">
           <NavButton onClick={() => onNavigate('home')}>Home</NavButton>
           <NavButton onClick={() => onNavigate('purchase')}>Buy Ticket</NavButton>
           <NavButton onClick={() => onNavigate('redeem')}>Redeem</NavButton>

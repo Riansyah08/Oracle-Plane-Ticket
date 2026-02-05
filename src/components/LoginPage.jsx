@@ -159,12 +159,41 @@ function LoginPage({ onLogin }) {
               onChange={v => setFormData({ ...formData, phone_number: v })}
             />
 
-            <Input
-              label="Password"
-              type="password"
-              value={formData.password}
-              onChange={v => setFormData({ ...formData, password: v })}
-            />
+            <label style={{ display: "block", marginBottom: 6 }}>
+              Password
+            </label>
+                    
+            <div style={{ position: "relative" }}>
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={v => setFormData({ ...formData, password: v })}
+                style={{
+                  paddingRight: "42px",
+                  height: "48px",          // match your input height
+                  boxSizing: "border-box"
+                }}
+              />
+            
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  height: "48px",    
+                  display: "flex",
+                  alignItems: "center"
+                }}
+              >
+                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
+            </div>
 
             <button
               onClick={handleRegister}
