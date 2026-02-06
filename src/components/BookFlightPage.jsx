@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
+import {discount} from '../utils/helpers.js';
 
 function BookFlightPage({ user, updateUser }) {
   const [allFlights, setAllFlights] = useState([]);
@@ -109,6 +110,7 @@ function BookFlightPage({ user, updateUser }) {
 
   /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (tx) => {
+    const prevPoints = user.points_balance;
   try {
     setLoading(true);
 
@@ -120,6 +122,11 @@ function BookFlightPage({ user, updateUser }) {
       planeAddressTo: tx.planeAddressTo,
       planeSeat: tx.seat
     };
+
+    const extra = {
+      price:tx.price
+    }
+
     console.log("FINAL payload to SOAP:", payload);
     
     await purchasePlane(payload);
@@ -127,7 +134,7 @@ function BookFlightPage({ user, updateUser }) {
       ...user,
       points_balance: user.points_balance + 3000
     });
-    alert(`✈️ Flight purchased successfully! Seat ${tx.seat}`);
+    alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
 
   } catch (err) {
     updateUser({ ...user, points_balance: prevPoints });
