@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
 import {discount} from '../utils/helpers.js';
+import { ticket_select } from '../utils/fetch.js';
 
 function BookFlightPage({ user, updateUser }) {
   const [allFlights, setAllFlights] = useState([]);
+  const [allTickets, setAllTickets] = useState([]);
   const [filteredFlights, setFilteredFlights] = useState([]);
 
   const [fromCities, setFromCities] = useState([]);
@@ -92,20 +94,20 @@ function BookFlightPage({ user, updateUser }) {
 
   /* ---------------- Seat Checker ---------------- */
   useEffect(() => {
-    const loadFlights = async () => {
+    const loadTickets = async () => {
       try {
         setLoading(true);
-        const flights = await PlaneSearch();
-        console.log('PlaneSearch result:', flights);
-        setAllFlights(flights);
+        const tickets = await ticket_select();
+        console.log('Ticket Data:', tickets);
+        setAllTickets(tickets);
       } catch (err) {
-        console.error('Failed to load flights', err);
+        console.error('Failed to load Ticket Data', err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadFlights();
+    loadTickets();
   }, []);
 
   /* ---------------- Purchase ---------------- */
@@ -290,21 +292,32 @@ function BookFlightPage({ user, updateUser }) {
 
               {/* Seat grid */}
               <div className="grid grid-cols-6 gap-2 max-h-64 overflow-y-auto mb-6">
-                {Array.from({ length: 180 }, (_, i) => i + 1).map(seat => (
-                  <button
-                    key={seat}
-                    onClick={() => setSelectedSeat(seat)}
-                    className={`py-2 rounded border text-sm font-semibold transition
-                      ${
-                        selectedSeat === seat
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 hover:bg-gray-200"
-                      }
-                    `}
-                  >
-                    {seat}
-                  </button>
-                ))}
+                {Array.from({ length: 180 }, (_, i) => i + 1).map(seat => {
+                  const isTaken = allTickets.some(
+                    t =>
+                      Number(t.planeSeat) === seat &&
+                      Number(t.planeId) === Number(selectedFlight.plane_id)
+                  );
+                
+                  return (
+                    <button
+                      key={seat}
+                      disabled={isTaken}
+                      onClick={() => setSelectedSeat(seat)}
+                      className={`py-2 rounded border text-sm font-semibold transition
+                        ${
+                          selectedSeat === seat
+                            ? "bg-blue-600 text-white"
+                            : isTaken
+                              ? "bg-red-500 text-white cursor-not-allowed opacity-70"
+                              : "bg-gray-100 hover:bg-gray-200"
+                        }
+                      `}
+                    >
+                      {seat}
+                    </button>
+                  );
+                })}
               </div>
               
               {/* Actions */}

@@ -1,7 +1,7 @@
 const BPM_URL = "/soa-infra/services/default/BpmProject/MainProccess.service";
 const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
 const Plansesch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
-const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDanaNoRq.service"
+const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDataNoRq.service"
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -571,14 +571,7 @@ export function ticket_select() {
   const payload = `
   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSeatDanaNoRq" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
-        <ns2:PurchaseRq>
-          <ns2:UserAccID/>
-          <ns2:Email/>
-          <ns2:ItemID/>
-          <ns2:ItemCount/>
-        </ns2:PurchaseRq>
-      </ns1:start>
+      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSeatDataNoRq"/>
     </soap:Body>
   </soap:Envelope>
 `;
@@ -601,19 +594,19 @@ export function ticket_select() {
       );
 
       return items.map(item => ({
-        userid: Number(
+        userId: Number(
           item.getElementsByTagNameNS("*", "userId")[0]?.textContent
         ),
-        planeid: Number(
+        planeId: Number(
           item.getElementsByTagNameNS("*", "planeId")[0]?.textContent
         ),
-        planeseat: Number(
+        planeSeat: Number(
           item.getElementsByTagNameNS("*", "planeSeat")[0]?.textContent
         ),
-        flightnumber: Number(
+        flightNumber: Number(
           item.getElementsByTagNameNS("*", "flightNumber")[0]?.textContent || 0
         ),
-        pairid: Number(
+        pairId: Number(
           item.getElementsByTagNameNS("*", "pairid")[0]?.textContent || 0
         )  
       }));
