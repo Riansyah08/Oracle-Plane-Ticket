@@ -89,6 +89,24 @@ function BookFlightPage({ user, updateUser }) {
     setFilteredFlights(results);
   };
 
+  /* ---------------- Seat Checker ---------------- */
+  useEffect(() => {
+    const loadFlights = async () => {
+      try {
+        setLoading(true);
+        const flights = await PlaneSearch();
+        console.log('PlaneSearch result:', flights);
+        setAllFlights(flights);
+      } catch (err) {
+        console.error('Failed to load flights', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFlights();
+  }, []);
+
   /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (tx) => {
   try {

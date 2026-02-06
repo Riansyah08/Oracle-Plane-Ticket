@@ -1,7 +1,7 @@
 const BPM_URL = "/soa-infra/services/default/BpmProject/MainProccess.service";
 const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
 const Plansesch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
-const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
+const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDanaNoRq.service"
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -566,12 +566,12 @@ export function item_select() {
     });
 }
 
-// utils/fetch.js
+/* ================= TICKET SELECT ================= */
 export function ticket_select() {
   const payload = `
   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/SelectTransaction" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
+      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSeatDanaNoRq" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
         <ns2:PurchaseRq>
           <ns2:UserAccID/>
           <ns2:Email/>
@@ -583,7 +583,7 @@ export function ticket_select() {
   </soap:Envelope>
 `;
 
-  return fetch(ITEMLIST_URL, {
+  return fetch(Ticketsearch_URL, {
     method: "POST",
     headers: {
       "Content-Type": "text/xml; charset=utf-8",
