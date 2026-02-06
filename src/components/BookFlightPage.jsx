@@ -20,6 +20,8 @@ function BookFlightPage({ user, updateUser }) {
   const [showSeatPicker, setShowSeatPicker] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [selectedSeat, setSelectedSeat] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
 
   /* ---------------- Helpers ---------------- */
   const normalize = v => v?.trim().toLowerCase();
@@ -48,7 +50,7 @@ function BookFlightPage({ user, updateUser }) {
     };
 
     loadFlights();
-  }, []);
+  }, [refreshKey]);
 
   /* ---------------- Build city dropdowns from DB data ---------------- */
   useEffect(() => {
@@ -337,7 +339,16 @@ function BookFlightPage({ user, updateUser }) {
                       seat: selectedSeat,
                       planeId: selectedFlight.plane_id
                     });
-                    setShowSeatPicker(false);
+                      // force seat grid to remount
+  setRefreshKey(prev => prev + 1);
+
+  // reset UI
+  setSelectedSeat(null);
+  setShowSeatPicker(false);
+
+  // OPTIONAL: re-fetch tickets so seats become taken
+  const tickets = await ticket_select();
+  setAllTickets(tickets);
                   }}
                   className="px-6 py-2 rounded bg-green-600 text-white font-semibold disabled:opacity-50"
                 >
