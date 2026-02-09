@@ -74,7 +74,7 @@ function LoginPage({ onLogin }) {
         transition-colors duration-300
           ${isLogin
             ? "bg-blue-600 text-white"
-            : "bg-gray text-gray-700 hover:bg-blue-600 hover:text-white"}
+            : "bg-gray text-gray-700 hover:bg-blue-300 hover:text-white"}
       `}
     > Login 
     </button> 
