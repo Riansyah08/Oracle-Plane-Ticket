@@ -18,6 +18,6 @@ export const discount = (tier) => {
   switch(tier) {
     case 'Platinum': return 0.1;
     case 'Gold': return 0.05;
-    default: return 1;
+    default: return 0;
   }
 }
