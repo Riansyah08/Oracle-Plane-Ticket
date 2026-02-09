@@ -30,11 +30,26 @@ function Navbar({ onNavigate, onLogout }) {
 
         {/* Desktop menu */}
         <div className="hidden md:flex gap-4">
-          <button onClick={() => onNavigate('home')} className="hover:bg-blue-700 px-4 py-2 rounded">Home</button>
-          <button onClick={() => onNavigate('purchase')} className="hover:bg-blue-700 px-4 py-2 rounded">Buy Ticket</button>
-          <button onClick={() => onNavigate('redeem')} className="hover:bg-blue-700 px-4 py-2 rounded">Redeem</button>
-          <button onClick={() => onNavigate('transactions')} className="hover:bg-blue-700 px-4 py-2 rounded">Transactions</button>
-          <button onClick={onLogout} className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+          <button onClick={() => onNavigate('home')} className="px-4 py-2 rounded-full
+bg-blue-600 hover:bg-blue-800
+transition-all duration-300 ease-in-out
+">Home</button>
+          <button onClick={() => onNavigate('purchase')} className="px-4 py-2 rounded-full
+bg-blue-600 hover:bg-blue-800
+transition-all duration-300 ease-in-out
+">Buy Ticket</button>
+          <button onClick={() => onNavigate('redeem')} className="px-4 py-2 rounded-full
+bg-blue-600 hover:bg-blue-800
+transition-all duration-300 ease-in-out
+">Redeem</button>
+          <button onClick={() => onNavigate('transactions')} className="px-4 py-2 rounded-full
+bg-blue-600 hover:bg-blue-800
+transition-all duration-300 ease-in-out
+">Transactions</button>
+          <button onClick={onLogout} className="px-4 py-2 rounded-full
+bg-blue-600 hover:bg-blue-800
+transition-all duration-300 ease-in-out
+">Logout</button>
         </div>
 
         {/* Mobile hamburger */}
