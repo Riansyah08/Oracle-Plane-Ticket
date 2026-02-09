@@ -2,8 +2,9 @@ import React from "react";
 import { Award } from "lucide-react";
 import { getTierColor,getbuttoncolour } from "../utils/helpers";
 import { purchaseItem } from "../utils/fetch";
+import { loginUser } from "../utils/fetch";
 
-function RewardsPage({ user, rewardItems, updateUser }) {
+function RewardsPage({ user, rewardItems, setCurrentUser }) {
   const handleRedeemItem = async (item) => {
     const tierOrder = ["Silver", "Gold", "Platinum"];
 
@@ -19,14 +20,6 @@ function RewardsPage({ user, rewardItems, updateUser }) {
       return;
     }
 
-    const prevPoints = user.points_balance;
-
-    // optimistic UI update
-    updateUser({
-      ...user,
-      points_balance: user.points_balance - item.points
-    });
-
     try {
       await purchaseItem({
         email: user.email,
@@ -34,10 +27,16 @@ function RewardsPage({ user, rewardItems, updateUser }) {
         itemId: item.id,
         amount: 1
       });
-
+ 
+      const freshUser = await loginUser({
+          email: user.email,
+          password: user.password,
+        });
+      // 🔥 replace global state
+      setCurrentUser(freshUser);
       alert(`${item.name} redeemed successfully!`);
+
     } catch (err) {
-      updateUser({ ...user, points_balance: prevPoints });
       alert("Redemption failed");
       console.error(err);
     }

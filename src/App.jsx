@@ -72,7 +72,7 @@ function App() {
           {currentPage === "purchase" && (
             <BookFlightPage
               user={currentUser}
-              updateUser={updateUser}
+              setCurrentUser={setCurrentUser}
               addTransaction={addTransaction}
             />
           )}
@@ -80,8 +80,8 @@ function App() {
           {currentPage === "redeem" && (
             <RewardsPage
               user={currentUser}
+              setCurrentUser={setCurrentUser}
               rewardItems={rewardItems}
-              updateUser={updateUser}
               addTransaction={addTransaction}
             />
           )}

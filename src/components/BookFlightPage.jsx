@@ -3,8 +3,9 @@ import { ShoppingCart } from 'lucide-react';
 import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
 import {discount} from '../utils/helpers.js';
 import { ticket_select } from '../utils/fetch.js';
+import { loginUser } from '../utils/fetch.js';
 
-function BookFlightPage({ user, updateUser }) {
+function BookFlightPage({ user, setCurrentUser }) {
   const [allFlights, setAllFlights] = useState([]);
   const [allTickets, setAllTickets] = useState([]);
   const [filteredFlights, setFilteredFlights] = useState([]);
@@ -114,8 +115,6 @@ function BookFlightPage({ user, updateUser }) {
 
   /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (tx) => {
-    const prevPoints = user.points_balance;
-    const prevKmHit = user.km_hit;
   try {
     setLoading(true);
 
@@ -135,15 +134,14 @@ function BookFlightPage({ user, updateUser }) {
     console.log("FINAL payload to SOAP:", payload);
     
     await purchasePlane(payload);
-    updateUser({
-      ...user,
-      points_balance: user.points_balance + 3000,
-      km_hit: user.km_hit + tx.km
-    });
+    const freshUser = await loginUser({
+        email: user.email,
+        password: user.password,
+      });
+    // 🔥 replace global state
+    setCurrentUser(freshUser);
     alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
-
   } catch (err) {
-    updateUser({ ...user, points_balance: prevPoints, km_hit: prevKmHit });
     console.error(err);
     alert('❌ Failed to purchase flight.');
   } finally {
