@@ -25,7 +25,7 @@ function Navbar({ onNavigate, onLogout }) {
           onClick={() => onNavigate('home')}
         >
           <Plane className="w-8 h-8 mr-2" />
-          <span className="text-2xl font-bold">OracleSky</span>
+          <span className="text-2xl font-bold">OSky</span>
         </div>
 
         {/* Desktop menu */}

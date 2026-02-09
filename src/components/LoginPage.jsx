@@ -63,7 +63,7 @@ function LoginPage({ onLogin }) {
 
         <div className="flex items-center justify-center mb-6">
           <Plane className="w-12 h-12 text-blue-600 mr-3" />
-          <h1 className="text-3xl font-bold text-gray-800">OracleSky</h1>
+          <h1 className="text-3xl font-bold text-gray-800">OSky</h1>
         </div>
 
         <div className="flex mb-6 gap-0.5 bg-gray-100 rounded-lg p-1">

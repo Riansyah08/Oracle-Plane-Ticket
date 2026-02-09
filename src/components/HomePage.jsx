@@ -17,7 +17,7 @@ function HomePage({ user, onNavigate }) {
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-18 mb-10">
         <div className="flex items-center mb-4">
-          <h2 className="ml-auto text-lg font-semibold">OracleSky Membership Account Detail</h2>
+          <h2 className="ml-auto text-lg font-semibold">OSky Membership Account Detail</h2>
         </div>
         <div className="flex items-center mb-4">
           <User className="w-10 h-10 text-blue-600 mr-3" />
