@@ -340,15 +340,15 @@ function BookFlightPage({ user, updateUser }) {
                       planeId: selectedFlight.plane_id
                     });
                       // force seat grid to remount
-  setRefreshKey(prev => prev + 1);
-
-  // reset UI
-  setSelectedSeat(null);
-  setShowSeatPicker(false);
-
-  // OPTIONAL: re-fetch tickets so seats become taken
-  const tickets = await ticket_select();
-  setAllTickets(tickets);
+                      setRefreshKey(prev => prev + 1);
+                                      
+                      // reset UI
+                      setSelectedSeat(null);
+                      setShowSeatPicker(false);
+                                      
+                      // OPTIONAL: re-fetch tickets so seats become taken
+                      const tickets = await ticket_select();
+                      setAllTickets(tickets);
                   }}
                   className="px-6 py-2 rounded bg-green-600 text-white font-semibold disabled:opacity-50"
                 >

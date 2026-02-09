@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { Transactionlog } from "../utils/fetch";
-import {item_select} from "../utils/fetch";
 
-function TransactionsPage({ user, rewardItems }) {
+function TransactionsPage({ user }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const isBuyTicket = tx.type === "BUY TICKET";
+  const displayPoints = isBuyTicket ? 100 : tx.points;
 
   useEffect(() => {
-    if (!user?.password || !user?.email) return;
+    if (!user?.user_id || !user?.email) return;
 
     setLoading(true);
     setError(null);
 
     Transactionlog({
-      email: user.email,
-      password: user.password // ✅ FIXED
+      userAccID: user.user_id, // ✅ FIXED
+      email: user.email
     })
+    
       .then(data => {
         console.log("Fetched transactions:", data); // debug
         setTransactions(Array.isArray(data) ? data : []);
@@ -42,27 +44,21 @@ function TransactionsPage({ user, rewardItems }) {
   );
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold mb-6 flex items-center">
           <History className="w-7 h-7 mr-2 text-gray-600" />
           Transaction History
         </h2>
 
-        <div className="space-y-4 max-h-188 overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
           {sortedTransactions.length === 0 && (
             <p className="text-gray-500 text-center">
               No transactions found
             </p>
           )}
 
-          {sortedTransactions.map(tx => {
-            const isBuyTicket = tx.type === "BUY TICKET"  
-            const matchedItem = rewardItems.find(
-              item => item.name === tx.item_name
-            );
-            const displayPoints = isBuyTicket ? 3000 : matchedItem?.points ?? Math.abs(tx.points);
-            return (
+          {sortedTransactions.map(tx => (
             <div
               key={tx.id}
               className="border rounded-lg p-5 hover:shadow-md transition"
@@ -94,7 +90,7 @@ function TransactionsPage({ user, rewardItems }) {
                 </div>
               </div>
             </div>
-          )})}
+          ))}
         </div>
       </div>
     </div>

@@ -25,7 +25,7 @@ function LoginPage({ onLogin }) {
         password: formData.password
       });
 
-      if (!user) {
+      if (!user?.user_id) {
         alert("User not found");
         return;
       }
