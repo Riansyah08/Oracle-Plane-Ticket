@@ -115,6 +115,7 @@ function BookFlightPage({ user, updateUser }) {
   /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (tx) => {
     const prevPoints = user.points_balance;
+    const prevKmHit = user.km_hit;
   try {
     setLoading(true);
 
@@ -136,12 +137,13 @@ function BookFlightPage({ user, updateUser }) {
     await purchasePlane(payload);
     updateUser({
       ...user,
-      points_balance: user.points_balance + 3000
+      points_balance: user.points_balance + 3000,
+      km_hit: user.km_hit + tx.km
     });
     alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
 
   } catch (err) {
-    updateUser({ ...user, points_balance: prevPoints });
+    updateUser({ ...user, points_balance: prevPoints, km_hit: prevKmHit });
     console.error(err);
     alert('❌ Failed to purchase flight.');
   } finally {
