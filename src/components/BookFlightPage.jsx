@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import { purchasePlane, PlaneSearch } from '../utils/fetch.js';
+import { purchasePlane } from '../utils/fetch.js';
 import {discount} from '../utils/helpers.js';
 import { ticket_select } from '../utils/fetch.js';
 import { loginUser } from '../utils/fetch.js';
@@ -22,6 +22,8 @@ function BookFlightPage({ user, setCurrentUser }) {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [departureDate, setDepartureDate] = useState("");
+  const [arrivalDate, setArrivalDate] = useState("");
 
 
   /* ---------------- Helpers ---------------- */
@@ -36,22 +38,26 @@ function BookFlightPage({ user, setCurrentUser }) {
       : '-';
 
   /* ---------------- Load ALL flights (once) ---------------- */
-  useEffect(() => {
-    const loadFlights = async () => {
-      try {
-        setLoading(true);
-        const flights = await PlaneSearch();
-        console.log('PlaneSearch result:', flights);
-        setAllFlights(flights);
-      } catch (err) {
-        console.error('Failed to load flights', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const loadFlights = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/planes");
 
-    loadFlights();
-  }, [refreshKey]);
+      if (!res.ok) throw new Error("Failed");
+
+      const data = await res.json();
+
+      console.log("ALL FLIGHTS:", data);
+
+      setAllFlights(data);
+
+    } catch (err) {
+      console.error("❌ ERROR:", err);
+    }
+  };
+
+  loadFlights();
+}, [refreshKey]);
 
   /* ---------------- Build city dropdowns from DB data ---------------- */
   useEffect(() => {
@@ -121,10 +127,11 @@ function BookFlightPage({ user, setCurrentUser }) {
     const payload = {
       email: user.email,
       password: user.password,
-      planeId: tx.planeId,
       planeAddressFrom: tx.planeAddressFrom,
       planeAddressTo: tx.planeAddressTo,
-      planeSeat: tx.seat
+      planeSeat: tx.seat,
+      DepartureDate: tx.departureDate,
+      ArrivalDate: tx.arrivalDate
     };
 
     const extra = {
@@ -211,6 +218,47 @@ function BookFlightPage({ user, setCurrentUser }) {
             </select>
           </div>
         </div>
+          
+        {/* Date Picker */}
+        <div className="flex gap-6 mb-6">
+
+          {/* Departure grid */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">
+              Departure Date
+            </label>
+
+            <input
+              type="date"
+              value={departureDate || ""}
+              onChange={(e) => {
+                const values = e.target.value;
+                setDepartureDate(values);
+
+                if (arrivalDate && values > arrivalDate) {
+                  setArrivalDate("");
+                }
+              }}
+              className="border rounded-lg px-4 py-2 w-48"
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </div>
+
+          {/* Arrival grid */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-1">
+              Arrival Date
+            </label>
+            <input
+              type="date"
+              value={arrivalDate || ""}
+              onChange={(e) => setArrivalDate(e.target.value)}
+              className="border rounded-lg px-4 py-2 w-48"
+              min={departureDate || new Date().toISOString().split("T")[0]}
+              disabled={!departureDate}
+            />
+          </div>
+        </div>
 
         {/* ---------------- Search button ---------------- */}
         <button
@@ -242,11 +290,15 @@ function BookFlightPage({ user, setCurrentUser }) {
                     </p>
 
                     <p className="text-gray-600">
-                      Departure: {formatDateTime(flight.planeschedule_departs)}
+                      Total Seat: {flight.total_seat}
                     </p>
 
                     <p className="text-gray-600">
-                      Arrival: {formatDateTime(flight.planeschedule_arrive)}
+                      Departure Time: {flight.planeschedule_departs}
+                    </p>
+
+                    <p className="text-gray-600">
+                      Arrival Time: {flight.planeschedule_arrive}
                     </p>
 
                     <p className="text-gray-600">KM: {flight.km}</p>
@@ -256,17 +308,25 @@ function BookFlightPage({ user, setCurrentUser }) {
                     <p className="text-gray-700 font-semibold mb-5">
                       Rp {flight.price.toLocaleString()}
                     </p>
-                    <button
-                      onClick={() => {
-                        setSelectedFlight(flight);
-                        setSelectedSeat(null);
-                        setShowSeatPicker(true);
-                      }}
-                      disabled={loading}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-semibold disabled:opacity-50"
-                    >
-                      Purchase
-                    </button>
+                    {flight.availability === "Y" ? (
+                      <button
+                        onClick={() => {
+                          setSelectedFlight(flight);
+                          setSelectedSeat(null);
+                          setShowSeatPicker(true);
+                        }}
+                        disabled={loading}
+                        className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition font-semibold disabled:opacity-50"
+                      >
+                        Purchase
+                      </button>
+                    ) : (
+                      <button
+                        className="bg-red-500 text-white px-6 py-2 rounded cursor-not-allowed opacity-50"
+                      >
+                        Flight Not Available
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -293,8 +353,8 @@ function BookFlightPage({ user, setCurrentUser }) {
               </p>
 
               {/* Seat grid */}
-              <div className="grid grid-cols-6 gap-2 max-h-64 overflow-y-auto mb-6">
-                {Array.from({ length: 180 }, (_, i) => i + 1).map(seat => {
+              <div className="grid grid-cols-6 gap-2 max-h-130 overflow-y-auto mb-6">
+                {Array.from({ length: 150 }, (_, i) => i + 1).map(seat => {
                   const isTaken = allTickets.some(
                     t =>
                       Number(t.planeSeat) === seat &&
@@ -332,12 +392,16 @@ function BookFlightPage({ user, setCurrentUser }) {
                 </button>
               
                 <button
-                  disabled={!selectedSeat || loading}
+                  disabled={!selectedSeat || loading || !departureDate}
                   onClick={async () => {
+                    console.log("Sending:", departureDate, arrivalDate);
+
                     await handlePurchaseFlight({
                       ...selectedFlight,
                       seat: selectedSeat,
-                      planeId: selectedFlight.plane_id
+                      planeId: selectedFlight.plane_id,
+                      departureDate,
+                      arrivalDate
                     });
                       // force seat grid to remount
                       setRefreshKey(prev => prev + 1);

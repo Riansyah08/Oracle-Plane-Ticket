@@ -49,7 +49,7 @@ function TransactionsPage({ user, rewardItems }) {
           Transaction History
         </h2>
 
-        <div className="space-y-4 max-h-188 overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-220 overflow-y-auto pr-2">
           {sortedTransactions.length === 0 && (
             <p className="text-gray-500 text-center">
               No transactions found
@@ -72,7 +72,14 @@ function TransactionsPage({ user, rewardItems }) {
                   <p className="font-bold text-lg">{tx.type}</p>
                   <p className="text-gray-600">{tx.description}</p>
                   <p className="text-sm text-gray-500">
-                    {new Date(tx.date).toLocaleString()}
+                    {new Date(tx.date).toLocaleString('id-ID', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    })}
                   </p>
                 </div>
 

@@ -5,11 +5,10 @@ import BookFlightPage from "./components/BookFlightPage";
 import RewardsPage from "./components/RewardsPage";
 import TransactionsPage from "./components/TransactionsPage";
 import Navbar from "./components/Navbar";
+import { Transactionlog } from "./utils/fetch";
 
-import { item_select, Transactionlog } from "./utils/fetch";
-
-function App() {
-  const [currentPage, setCurrentPage] = useState("login");
+function App({}) {
+  const [currentPage, setCurrentPage] = useState("purchase");
   const [currentUser, setCurrentUser] = useState(null);
 
   // 🔥 REAL DATA (NO DUMMY)
@@ -20,12 +19,7 @@ function App() {
   const handleLogin = async (user) => {
     setCurrentUser(user);
     setCurrentPage("home");
-
     try {
-      // 🎁 Load rewards
-      const items = await item_select();
-      setRewardItems(items);
-
       // 📜 Load transactions
       const txs = await Transactionlog({
         email: user.email,
@@ -36,6 +30,12 @@ function App() {
       console.error("Failed to load initial data:", err);
     }
   };
+
+  const isUserInvalid = !currentUser || currentUser.user_id === undefined || currentUser.full_name === '';
+
+  if (currentPage === "home" && isUserInvalid) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -58,10 +58,28 @@ function App() {
   if (currentPage === "login") {
     return <LoginPage onLogin={handleLogin} />;
   }
+  
+  if (currentPage === "purchase") {
+    return <div className="h-screen flex flex-col bg-indigo-200 overflow-hidden">
+      <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} user={currentUser}/>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="container mx-auto p-4">
+          {currentPage === "purchase" && (
+            <BookFlightPage
+              user={currentUser}
+              setCurrentUser={setCurrentUser}
+              addTransaction={addTransaction}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  }
 
   return (
     <div className="h-screen flex flex-col bg-indigo-200 overflow-hidden">
-      <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} />
+      <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} user={currentUser}/>
 
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-4">

@@ -8,7 +8,7 @@ function RewardsPage({ user, rewardItems, setCurrentUser }) {
   const handleRedeemItem = async (item) => {
     const tierOrder = ["Silver", "Gold", "Platinum"];
 
-    if (user.points_balance < item.points) {
+    if (user.points_balance < item.points || user.points_balance === undefined) {
       alert("Insufficient points balance!");
       return;
     }
@@ -22,6 +22,7 @@ function RewardsPage({ user, rewardItems, setCurrentUser }) {
 
     try {
       await purchaseItem({
+        traceNumber: trace,
         email: user.email,
         password: user.password,
         itemId: item.id,
@@ -41,7 +42,7 @@ function RewardsPage({ user, rewardItems, setCurrentUser }) {
       console.error(err);
     }
   };
-
+  
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -53,7 +54,7 @@ function RewardsPage({ user, rewardItems, setCurrentUser }) {
         <p className="mb-6 text-gray-600">
           Points:{" "}
           <span className="font-bold text-purple-600">
-            {user.points_balance.toLocaleString()}
+            {user.points_balance?.toLocaleString() ?? "0"}
           </span>
         </p>
 
