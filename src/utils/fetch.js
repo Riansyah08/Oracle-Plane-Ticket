@@ -4,9 +4,15 @@ const REGIST_URL = "/Ticket/init/Service/BPM/Biz/UserAccRegistBizService";
 const TRANSACTIONLOG_URL = "/Ticket/init/Service/BPM/Biz/UserTicketDisplayBizService";
 const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizService";
 const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
+<<<<<<< Updated upstream
 const Plansesch_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
 //const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDataNoRq.service"
 const randomNumber = Math.floor(10000 + Math.random() * 90000);
+=======
+const Plansesch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service";
+const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDataNoRq.service";
+const Changepassword_URL = "/soa-infra/services/default/BpmProject/ChangePassword.service";
+>>>>>>> Stashed changes
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -128,7 +134,26 @@ export function Register(formData) {
     });
 }
 
+<<<<<<< Updated upstream
 /* ================= REDEEM ITEM ================= */
+=======
+
+/*====== Change Password ======*/
+export function Changepassword(formData){
+  const payloadChangepass = '';
+  return fetch(Changepassword_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      "Accept": "text/xml",
+      "SOAPAction": "start"
+    },
+    body: payloadChangepass
+  })
+}
+
+/* ================= PURCHASE ITEM ================= */
+>>>>>>> Stashed changes
 export function purchaseItem(newTransaction) {
   console.log("newTransaction:", newTransaction);
   const payloadItems = `
