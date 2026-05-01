@@ -544,7 +544,7 @@ export function ticket_select() {
   return fetch(Ticketsearch_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
+      "Content-Type": "text/xml",
       Accept: "text/xml"
     },
     body: payload
@@ -553,15 +553,12 @@ export function ticket_select() {
     .then(xmlText => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
+      console.log("RAW XML:", xmlText);
       const items = Array.from(
-        xmlDoc.getElementsByTagNameNS("*", "TicketInfoRs")
+        xmlDoc.getElementsByTagNameNS("*", "TicketList")
       );
 
       return items.map(item => ({
-        userId: Number(
-          item.getElementsByTagNameNS("*", "FullName")[0]?.textContent
-        ),
         planeId: Number(
           item.getElementsByTagNameNS("*", "planeName")[0]?.textContent
         ),

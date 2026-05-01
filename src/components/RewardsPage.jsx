@@ -7,63 +7,84 @@ import { loginUser } from "../utils/fetch";
 function RewardsPage({ user, rewardItems, setCurrentUser }) {
   const [allItems, setAllItems] = useState([]);
   /* ---------------- Load ALL Items (once) ---------------- */
-  useEffect(() => {
-    const loadItems = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/items");
-      
-        if (!res.ok) throw new Error("Failed");
-      
-        const data = await res.json();
-      
-        console.log("ALL Items:", data);
-      
-        setAllItems(data);
-      
-      } catch (err) {
-        console.error("❌ ERROR:", err);
-      }
-    };
-  
-    loadItems();
-  }, []);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleRedeemItem = async (item) => {
-    const tierOrder = ["Silver", "Gold", "Platinum"];
-
-    if (user.points_balance < item.points || user.points_balance === undefined) {
-      alert("Insufficient points balance!");
-      return;
-    }
-    if (
-      tierOrder.indexOf(user.tier_name) <
-      tierOrder.indexOf(item.tier)
-    ) {
-      alert(`This reward requires ${item.tier} tier or higher!`);
-      return;
-    }
-
+useEffect(() => {
+  const loadItems = async () => {
     try {
-      await purchaseItem({
-        email: user.email,
-        password: user.password,
-        itemId: item.item_id,
-        amount: 1
-      });
- 
-      const freshUser = await loginUser({
-          email: user.email,
-          password: user.password,
-        });
-      // 🔥 replace global state
-      setCurrentUser(freshUser);
-      alert(`${item.name} redeemed successfully!`);
+      const res = await fetch("http://localhost:3001/api/items");
+
+      if (!res.ok) throw new Error("Failed");
+
+      const data = await res.json();
+
+      console.log("ALL Items:", data);
+      setAllItems(data);
 
     } catch (err) {
-      alert("Redemption failed");
-      console.error(err);
+      console.error("❌ ERROR:", err);
     }
   };
+
+  loadItems();
+}, [refreshKey]); // only for items
+
+  const handleRedeemItem = async (item) => {
+  try {
+    const latestUser = await loginUser({
+      email: user.email,
+      password: user.password,
+    });
+
+    const tierOrder = ["Silver", "Gold", "Platinum"];
+
+    if (latestUser.points_balance < item.price) {
+      alert("Insufficient points!");
+      return;
+    }
+
+    if (
+      tierOrder.indexOf(latestUser.tier_name) <
+      tierOrder.indexOf(item.minTier)
+    ) {
+      alert(`Requires ${item.minTier} tier`);
+      return;
+    }
+
+    // 🔥 purchase
+    await purchaseItem({
+      email: latestUser.email,
+      password: latestUser.password,
+      itemId: item.item_id,
+      amount: 1,
+    });
+
+    // 🔥 refresh user HERE (not in useEffect)
+    try {
+      const updatedUser = await loginUser({
+        email: latestUser.email,
+        password: latestUser.password,
+      });
+
+      if (updatedUser && updatedUser.email) {
+        setCurrentUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+    } catch (err) {
+      console.warn("User refresh failed, keeping old state");
+    }
+
+    // 🔥 refresh items only
+    setRefreshKey(prev => prev + 1);
+
+    alert(`${item.name} redeemed successfully!`);
+
+  } catch (err) {
+    console.error(err);
+    alert("Redemption failed");
+  }
+};
 
   return (
     <div className="max-w-7xl mx-auto">
