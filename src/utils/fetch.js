@@ -130,7 +130,18 @@ export function Register(formData) {
 
 /*====== Change Password ======*/
 export function Changepassword(formData){
-  const payloadChangepass = '';
+  const payloadChangepass = `
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/Process1" xmlns:ns2="http://www.permatabank.com/System02">
+			<ns2:PasswordChngRq>
+				<ns2:Email>${formData.email}}</ns2:Email>
+				<ns2:Password>${formData.password}}</ns2:Password>
+			</ns2:PasswordChngRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
+`;
   return fetch(Changepassword_URL, {
     method: "POST",
     headers: {
@@ -139,6 +150,31 @@ export function Changepassword(formData){
     },
     body: payloadChangepass
   })
+    .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      
+        const text = await response.text();
+      
+        console.log("RAW SOAP RESPONSE:", text);
+      
+        if (!text || text.trim() === "") {
+          throw new Error("Empty SOAP response");
+        }
+      
+        return text;
+    })
+    .then(xmlText => {
+        // If you need to work with the XML structure, parse it using DOMParser
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+        console.log('Parsed XML Document:', xmlDoc);
+    })
+    .catch(error => {
+        // Handle network errors or errors from the .then blocks
+        console.error('There was a problem with the fetch operation:', error);
+    });
 }
 
 /* ================= PURCHASE ITEM ================= */

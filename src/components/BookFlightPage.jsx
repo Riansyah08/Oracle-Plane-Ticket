@@ -308,7 +308,7 @@ function BookFlightPage({ user, setCurrentUser }) {
                     {flight.availability === "Y" ? (
                       <button
                         onClick={() => {
-                          if (!user || !user.id) {
+                          if (!user?.user_id) {
                             alert("Please Login first!");
                             window.location.reload();
                             return;

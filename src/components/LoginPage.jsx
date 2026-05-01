@@ -67,7 +67,7 @@ function LoginPage({ onLogin }) {
     try {
       await Changepassword({
         email: formData.email,
-        Password1: formData.password,
+        Password: formData.password,
         Password2: formData.confirmPassword,
       });
       alert("Password changed successfully. Please login.");
