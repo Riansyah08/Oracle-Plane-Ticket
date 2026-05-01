@@ -6,6 +6,7 @@ const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizSe
 const ITEMLIST_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
 const Plansesch_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
 const Ticketsearch_URL = "/Ticket/init/Service/BPM/Biz/TicketInfoBizService"
+const Changepassword_URL = "/Ticket/init/Service/BPM/Biz/UserChangePWBizService";
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -127,26 +128,20 @@ export function Register(formData) {
     });
 }
 
-<<<<<<< Updated upstream
-/* ================= REDEEM ITEM ================= */
-=======
-
 /*====== Change Password ======*/
 export function Changepassword(formData){
   const payloadChangepass = '';
   return fetch(Changepassword_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
-      "Accept": "text/xml",
-      "SOAPAction": "start"
+      "Content-Type": "text/xml",
+      "Accept": "text/xml"
     },
     body: payloadChangepass
   })
 }
 
 /* ================= PURCHASE ITEM ================= */
->>>>>>> Stashed changes
 export function purchaseItem(newTransaction) {
 const randomNumber = Math.floor(10000 + Math.random() * 90000);
   console.log("newTransaction:", newTransaction);
