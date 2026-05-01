@@ -127,7 +127,26 @@ export function Register(formData) {
     });
 }
 
+<<<<<<< Updated upstream
 /* ================= REDEEM ITEM ================= */
+=======
+
+/*====== Change Password ======*/
+export function Changepassword(formData){
+  const payloadChangepass = '';
+  return fetch(Changepassword_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      "Accept": "text/xml",
+      "SOAPAction": "start"
+    },
+    body: payloadChangepass
+  })
+}
+
+/* ================= PURCHASE ITEM ================= */
+>>>>>>> Stashed changes
 export function purchaseItem(newTransaction) {
 const randomNumber = Math.floor(10000 + Math.random() * 90000);
   console.log("newTransaction:", newTransaction);

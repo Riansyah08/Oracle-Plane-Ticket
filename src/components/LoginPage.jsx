@@ -1,20 +1,23 @@
 import React, { useState } from "react";
-import { Plane, LogIn } from "lucide-react";
-import { Register, loginUser } from "../utils/fetch";
+import { Plane, LogIn, KeyRound } from "lucide-react";
+import { Register, loginUser, Changepassword } from "../utils/fetch";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 function LoginPage({ onLogin }) {
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState("login");        // ✅ replaces isLogin
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false); // ✅ added
 
   const [formData, setFormData] = useState({
-    userAccID: "",
     email: "",
     password: "",
+    confirmPassword: "",
     full_name: "",
     phone_number: ""
   });
+
+  const set = (field) => (v) => setFormData((prev) => ({ ...prev, [field]: v })); // ✅ added
 
   /* ================= LOGIN ================= */
   const handleLogin = async () => {
@@ -32,7 +35,6 @@ function LoginPage({ onLogin }) {
 
       // 🔹 LoginPage does NOT care how transactions are fetched
       onLogin(user);
-
     } catch (err) {
       console.error(err);
       alert("Login failed");
@@ -47,7 +49,7 @@ function LoginPage({ onLogin }) {
     try {
       await Register(formData);
       alert("Registration successful. Please login.");
-      setIsLogin(true);
+      setView("login");
     } catch (err) {
       console.error(err);
       alert("Registration failed");
@@ -56,164 +58,161 @@ function LoginPage({ onLogin }) {
     }
   };
 
+  /* ================= CHANGE PASSWORD ================= */
+  const handleChangePassword = async () => {
+    if (!formData.email) { alert("Please enter your account email."); return; }
+    if (!formData.password) { alert("Please enter a new password."); return; }
+    if (formData.password !== formData.confirmPassword) { alert("Passwords do not match."); return; }
+    setLoading(true);
+    try {
+      await Changepassword({
+        email: formData.email,
+        Password1: formData.password,
+        Password2: formData.confirmPassword,
+      });
+      alert("Password changed successfully. Please login.");
+      setView("login");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to change password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4 gap-5">
+
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
 
         <div className="flex items-center justify-center mb-6">
           <Plane className="w-12 h-12 text-blue-600 mr-3" />
           <h1 className="text-3xl font-bold text-gray-800">OSky</h1>
         </div>
-
-        <div className="flex mb-6 gap-0.5 bg-gray-100 rounded-lg p-1">
-    <button
-      onClick={() => setIsLogin(true)}
-      className={`
-        flex-1 py-2 rounded-lg
-        transition-colors duration-300
-          ${isLogin
-            ? "bg-blue-600 text-white"
-            : "bg-gray text-gray-700 hover:bg-blue-300 hover:text-white"}
-      `}
-    > Login 
-    </button> 
-    <button
-      onClick={() => setIsLogin(false)}
-        className={`
-            flex-1 py-2 rounded-lg
-              transition-colors duration-300
-              ${!isLogin
-              ? "bg-blue-600 text-white"
-              : "text-gray-700 hover:bg-blue-300 hover:text-white"}
-          `}
-        >
-        Register
-        </button>
-    </div>
-        {isLogin ? (
-          <>
-            <Input
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={v => setFormData({ ...formData, email: v })}
-            />
-
-            <label style={{ display: "block", marginBottom: 6 }}>
-              Password
-            </label>
-                    
-            <div style={{ position: "relative" }}>
-              <Input
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={v => setFormData({ ...formData, password: v })}
-                style={{
-                  paddingRight: "42px",
-                  height: "48px",          // match your input height
-                  boxSizing: "border-box"
-                }}
-              />
-            
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: "absolute",
-                  right: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  height: "48px",    
-                  display: "flex",
-                  alignItems: "center"
-                }}
-              >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-              </button>
-            </div>
-
+    
+        {view !== "changePassword" && (
+          <div className="flex mb-6 gap-0.5 bg-gray-100 rounded-lg p-1">
             <button
-              onClick={handleLogin}
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center"
+              onClick={() => setView("login")}
+              className={`flex-1 py-2 rounded-lg transition-colors duration-300 ${
+                view === "login" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-300 hover:text-white"
+              }`}
             >
-              <LogIn className="w-5 h-5 mr-2" />
-              {loading ? "Logging in..." : "Login"}
+              Login
             </button>
-          </>
-        ) : (
+            <button
+              onClick={() => setView("register")}
+              className={`flex-1 py-2 rounded-lg transition-colors duration-300 ${
+                view === "register" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-300 hover:text-white"
+              }`}
+            >
+              Register
+            </button>
+          </div>
+        )}
+
+        {/* ── LOGIN ── */}
+        {view === "login" && (
+  <>
+    <Input label="Email" type="email" value={formData.email} onChange={set("email")} />
+    <PasswordInput
+      label="Password"
+      value={formData.password}
+      show={showPassword}
+      onToggle={() => setShowPassword(!showPassword)}
+      onChange={set("password")}
+    />
+    <button
+      onClick={handleLogin}
+      disabled={loading}
+      className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center mt-2"
+    >
+      <LogIn className="w-5 h-5 mr-2" />
+      {loading ? "Logging in..." : "Login"}
+    </button>
+
+    {/* 👇 Add this here */}
+    <div className="text-center mt-3">
+      
+       <a href="#"
+        onClick={(e) => { e.preventDefault(); setView("changePassword"); }}
+        className="text-blue-600 text-sm hover:underline"
+      >
+        Change Password
+      </a>
+    </div>
+  </>
+)}
+
+        {/* ── REGISTER ── */}
+        {view === "register" && (
           <>
-            <Input
-              label="Full Name"
-              value={formData.full_name}
-              onChange={v => setFormData({ ...formData, full_name: v })}
+            <Input label="Full Name"    value={formData.full_name}    onChange={set("full_name")} />
+            <Input label="Email" type="email" value={formData.email}  onChange={set("email")} />
+            <Input label="Phone Number" value={formData.phone_number} onChange={set("phone_number")} />
+            <PasswordInput
+              label="Password"
+              value={formData.password}
+              show={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+              onChange={set("password")}
             />
-
-            <Input
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={v => setFormData({ ...formData, email: v })}
-            />
-
-            <Input
-              label="Phone Number"
-              value={formData.phone_number}
-              onChange={v => setFormData({ ...formData, phone_number: v })}
-            />
-
-            <label style={{ display: "block", marginBottom: 6 }}>
-              Password
-            </label>
-                    
-            <div style={{ position: "relative" }}>
-              <Input
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={v => setFormData({ ...formData, password: v })}
-                style={{
-                  paddingRight: "42px",
-                  height: "48px",          // match your input height
-                  boxSizing: "border-box"
-                }}
-              />
-            
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: "absolute",
-                  right: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  height: "48px",    
-                  display: "flex",
-                  alignItems: "center"
-                }}
-              >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-              </button>
-            </div>
-
             <button
               onClick={handleRegister}
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg mt-2"
             >
               {loading ? "Registering..." : "Register"}
             </button>
           </>
         )}
+
+        {/* ── CHANGE PASSWORD ── */}
+        {view === "changePassword" && (
+          <>
+            <h2 className="text-xl font-semibold text-gray-700 mb-5 text-center">Change Password</h2>
+            <Input label="Account Email" type="email" value={formData.email} onChange={set("email")} />
+            <PasswordInput
+              label="New Password"
+              value={formData.password}
+              show={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+              onChange={set("password")}
+            />
+            <PasswordInput
+              label="Confirm Password"
+              value={formData.confirmPassword}
+              show={showConfirm}
+              onToggle={() => setShowConfirm(!showConfirm)}
+              onChange={set("confirmPassword")}
+            />
+            {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+              <p className="text-red-500 text-sm mb-3 -mt-2">Passwords do not match.</p>
+            )}
+            <button
+              onClick={handleChangePassword}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center mt-2"
+            >
+              <KeyRound className="w-5 h-5 mr-2" />
+              {loading ? "Updating..." : "Change Password"}
+            </button>
+            <button
+              onClick={() => setView("login")}
+              className="w-full mt-3 text-blue-600 text-sm hover:underline"
+            >
+              ← Back to Login
+            </button>
+          </>
+        )}
+
       </div>
+
     </div>
   );
 }
+
+/* ── Shared components ── */
 
 function Input({ label, value, onChange, type = "text" }) {
   return (
@@ -223,8 +222,36 @@ function Input({ label, value, onChange, type = "text" }) {
         type={type}
         className="w-full px-4 py-2 border rounded-lg"
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
       />
+    </div>
+  );
+}
+
+function PasswordInput({ label, value, onChange, show, onToggle }) {
+  return (
+    <div className="mb-4">
+      <label className="block text-gray-700 mb-2">{label}</label>
+      <div style={{ position: "relative" }}>
+        <input
+          type={show ? "text" : "password"}
+          className="w-full px-4 py-2 border rounded-lg"
+          style={{ paddingRight: "42px" }}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          style={{
+            position: "absolute", right: "12px", top: "50%",
+            transform: "translateY(-50%)", background: "none",
+            border: "none", cursor: "pointer", display: "flex", alignItems: "center"
+          }}
+        >
+          {show ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+        </button>
+      </div>
     </div>
   );
 }
