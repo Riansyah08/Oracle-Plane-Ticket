@@ -41,6 +41,32 @@ function TransactionsPage({ user, rewardItems }) {
     (a, b) => new Date(b.date) - new Date(a.date)
   );
 
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+      });
+  };
+
+const formatDescription = (desc) => {
+  const regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}[+-]\d{2}:\d{2}/g;
+
+  return desc.replace(regex, (match) => {
+    const d = new Date(match);
+
+    // ONLY format date (no time)
+    return d.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  });
+};
+
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -70,7 +96,7 @@ function TransactionsPage({ user, rewardItems }) {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="flex-1">
                   <p className="font-bold text-lg">{tx.type}</p>
-                  <p className="text-gray-600">{tx.description}</p>
+                  <p className="text-gray-600">{formatDescription(tx.description)}</p>
                   <p className="text-sm text-gray-500">
                     {new Date(tx.date).toLocaleString('id-ID', {
                       day: '2-digit',

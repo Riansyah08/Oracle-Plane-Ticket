@@ -135,8 +135,9 @@ export function Changepassword(formData){
 	<soap:Body>
 		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/Process1" xmlns:ns2="http://www.permatabank.com/System02">
 			<ns2:PasswordChngRq>
-				<ns2:Email>${formData.email}}</ns2:Email>
-				<ns2:Password>${formData.password}}</ns2:Password>
+				<ns2:UserAccID></ns2:UserAccID>
+				<ns2:Email>${formData.email}</ns2:Email>
+				<ns2:Password>${formData.Password}</ns2:Password>
 			</ns2:PasswordChngRq>
 		</ns1:start>
 	</soap:Body>

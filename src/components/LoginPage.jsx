@@ -30,6 +30,7 @@ function LoginPage({ onLogin }) {
 
       if (!user?.user_id) {
         alert("User not found");
+        window.location.reload();
         return;
       }
 
