@@ -274,9 +274,8 @@ const randomNumber = Math.floor(10000 + Math.random() * 90000);
     const res = await fetch(Plansesch_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "text/xml; charset=utf-8",
-        Accept: "text/xml",
-        SOAPAction: "start"
+        "Content-Type": "text/xml",
+        Accept: "text/xml"
       },
       body: payloadSearch
     });
