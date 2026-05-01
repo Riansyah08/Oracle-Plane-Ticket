@@ -3,10 +3,9 @@ const LOGIN_URL = "/Ticket/init/Service/BPM/Biz/UserLoginBizService";
 const REGIST_URL = "/Ticket/init/Service/BPM/Biz/UserAccRegistBizService";
 const TRANSACTIONLOG_URL = "/Ticket/init/Service/BPM/Biz/UserTicketDisplayBizService";
 const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizService";
-const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
+const ITEMLIST_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
 const Plansesch_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
-//const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDataNoRq.service"
-const randomNumber = Math.floor(10000 + Math.random() * 90000);
+const Ticketsearch_URL = "/Ticket/init/Service/BPM/Biz/TicketInfoBizService"
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -130,6 +129,7 @@ export function Register(formData) {
 
 /* ================= REDEEM ITEM ================= */
 export function purchaseItem(newTransaction) {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   console.log("newTransaction:", newTransaction);
   const payloadItems = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -146,7 +146,7 @@ export function purchaseItem(newTransaction) {
 				<ns2:ArrivalDate/>
 			</ns2:TicketBuywithCohRq>
 			<ns2:PointRedeemwithCohRq>
-				<ns2:TraceNumber>${newTransaction.traceNumber}</ns2:TraceNumber>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
 				<ns2:Email>${newTransaction.email}</ns2:Email>
 				<ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
 				<ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
@@ -165,17 +165,22 @@ export function purchaseItem(newTransaction) {
   },  
     body: payloadItems
   })
-        .then(response => {
+    .then(async (response) => {
         if (!response.ok) {
-            // Handle HTTP errors
-            throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        // If you expect an XML response, you would process it here
-        return response.text(); // Get the response body as text
+      
+        const text = await response.text();
+      
+        console.log("RAW SOAP RESPONSE:", text);
+      
+        if (!text || text.trim() === "") {
+          throw new Error("Empty SOAP response");
+        }
+      
+        return text;
     })
     .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
         // If you need to work with the XML structure, parse it using DOMParser
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
@@ -189,16 +194,18 @@ export function purchaseItem(newTransaction) {
 
 /* ================= PURCHASE PLANE ================= */
 export function purchasePlane(newTransaction) {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const payloadPlane = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 	<soap:Body>
 		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/TransactionflowProcess" xmlns:ns2="http://www.permatabank.com/Coherence">
 			<ns2:TicketBuywithCohRq>
-				<ns2:TraceNumber>${newTransaction.traceNumber}</ns2:TraceNumber>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
 				<ns2:Email>${newTransaction.email}</ns2:Email>
 				<ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
 				<ns2:planeAddressFrom>${newTransaction.planeAddressFrom}</ns2:planeAddressFrom>
-				<ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>
+				<ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>        
+        <ns2:planeId>${newTransaction.planeId}</ns2:planeId>
 				<ns2:planeSeat>${newTransaction.planeSeat}</ns2:planeSeat>
 				<ns2:DepartureDate>${newTransaction.DepartureDate}</ns2:DepartureDate>
 				<ns2:ArrivalDate>${newTransaction.ArrivalDate}</ns2:ArrivalDate>
@@ -224,8 +231,17 @@ export function purchasePlane(newTransaction) {
     body: payloadPlane
  })
     .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
+        // ✅ Step 1: ensure it's a string
+        if (typeof xmlText !== "string") {
+          console.error("❌ Expected XML string but got:", xmlText);
+          return [];
+        }
+      
+        // ✅ Step 2: check empty
+        if (xmlText.trim() === "") {
+          console.error("❌ Empty XML response");
+          return [];
+        }
         // If you need to work with the XML structure, parse it using DOMParser
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
@@ -239,6 +255,7 @@ export function purchasePlane(newTransaction) {
 
 /* ================= PLANE SCHEDULES ================= */
 export async function PlaneSearch(planepload) {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const payloadSearch = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 	<soap:Body>
@@ -395,6 +412,7 @@ export function Transactionlog({ email, password }) {
 
 // utils/fetch.js
 export function item_select() {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const mapTier = (tier) => {
   if (!tier) return null;
   switch (tier.trim()) {
@@ -410,24 +428,22 @@ export function item_select() {
 };
 
   const payload = `
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/SelectTransaction" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
-        <ns2:PurchaseRq>
-          <ns2:UserAccID/>
-          <ns2:Email/>
-          <ns2:ItemID/>
-          <ns2:ItemCount/>
-        </ns2:PurchaseRq>
-      </ns1:start>
-    </soap:Body>
-  </soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/ItemCoherenceList" xmlns:ns2="http://www.permatabank.com/Coherence">
+			<ns2:ItemRq>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
+				<ns2:Reload>N</ns2:Reload>
+			</ns2:ItemRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
 `;
 
   return fetch(ITEMLIST_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
+      "Content-Type": "text/xml",
       Accept: "text/xml"
     },
     body: payload
@@ -450,7 +466,10 @@ export function item_select() {
         ),
         tier: mapTier(
           item.getElementsByTagNameNS("*", "minTier")[0]?.textContent || 0
-        )  
+        ),
+        stock: mapTier(
+          item.getElementsByTagNameNS("*", "itemStock")[0]?.textContent || 0
+        )    
       }));
     });
 }
@@ -458,11 +477,18 @@ export function item_select() {
 /* ================= TICKET SELECT ================= */
 export function ticket_select() {
   const payload = `
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSeatDataNoRq"/>
-    </soap:Body>
-  </soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/TicketInfoCoherence" xmlns:ns2="http://www.permatabank.com/UserSystem">
+			<ns2:TicketInfoRq>
+				<ns2:UserAccID/>
+				<ns2:planeId/>
+				<ns2:planeSeat/>
+				<ns2:flightNumber/>
+			</ns2:TicketInfoRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
 `;
 
   return fetch(Ticketsearch_URL, {
@@ -479,15 +505,15 @@ export function ticket_select() {
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
       const items = Array.from(
-        xmlDoc.getElementsByTagNameNS("*", "PlaneToUser")
+        xmlDoc.getElementsByTagNameNS("*", "TicketInfoRs")
       );
 
       return items.map(item => ({
         userId: Number(
-          item.getElementsByTagNameNS("*", "userId")[0]?.textContent
+          item.getElementsByTagNameNS("*", "FullName")[0]?.textContent
         ),
         planeId: Number(
-          item.getElementsByTagNameNS("*", "planeId")[0]?.textContent
+          item.getElementsByTagNameNS("*", "planeName")[0]?.textContent
         ),
         planeSeat: Number(
           item.getElementsByTagNameNS("*", "planeSeat")[0]?.textContent
@@ -497,6 +523,12 @@ export function ticket_select() {
         ),
         pairId: Number(
           item.getElementsByTagNameNS("*", "pairid")[0]?.textContent || 0
+        ),
+        departure_Date: Number(
+          item.getElementsByTagNameNS("*", "planeScheduleDeparts")[0]?.textContent
+        ),
+        arrival_Date: Number(
+          item.getElementsByTagNameNS("*", "planeScheduleArrive")[0]?.textContent
         )  
       }));
     });
