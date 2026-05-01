@@ -38,27 +38,27 @@ function BookFlightPage({ user, setCurrentUser }) {
       : '-';
 
   /* ---------------- Load ALL flights (once) ---------------- */
-useEffect(() => {
-  const loadFlights = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/api/planes");
-
-      if (!res.ok) throw new Error("Failed");
-
-      const data = await res.json();
-
-      console.log("ALL FLIGHTS:", data);
-
-      setAllFlights(data);
-
-    } catch (err) {
-      console.error("❌ ERROR:", err);
-    }
-  };
-
-  loadFlights();
-}, [refreshKey]);
-
+  useEffect(() => {
+    const loadFlights = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/planes");
+      
+        if (!res.ok) throw new Error("Failed");
+      
+        const data = await res.json();
+      
+        console.log("ALL FLIGHTS:", data);
+      
+        setAllFlights(data);
+      
+      } catch (err) {
+        console.error("❌ ERROR:", err);
+      }
+    };
+  
+    loadFlights();
+  }, [refreshKey]);
+  
   /* ---------------- Build city dropdowns from DB data ---------------- */
   useEffect(() => {
     if (allFlights.length === 0) return;
@@ -129,14 +129,11 @@ useEffect(() => {
       password: user.password,
       planeAddressFrom: tx.planeAddressFrom,
       planeAddressTo: tx.planeAddressTo,
+      planeId: tx.planeId,
       planeSeat: tx.seat,
       DepartureDate: tx.departureDate,
       ArrivalDate: tx.arrivalDate
     };
-
-    const extra = {
-      price:tx.price
-    }
 
     console.log("FINAL payload to SOAP:", payload);
     
@@ -305,12 +302,17 @@ useEffect(() => {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-gray-700 font-semibold mb-5">
+                    <p className="text-gray-700 font-semibold mt-7 mb-3 mr-2">
                       Rp {flight.price.toLocaleString()}
                     </p>
                     {flight.availability === "Y" ? (
                       <button
                         onClick={() => {
+                          if (!user || !user.id) {
+                            alert("Please Login first!");
+                            window.location.reload();
+                            return;
+                          }
                           setSelectedFlight(flight);
                           setSelectedSeat(null);
                           setShowSeatPicker(true);
