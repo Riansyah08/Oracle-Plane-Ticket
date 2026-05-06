@@ -36,7 +36,6 @@ return fetch(LOGIN_URL, {
       return res.text(); // ✅ THIS WAS MISSING
     })
     .then(xmlText => {
-      console.log("RAW RESPONSE:", xmlText); 
       return xmlText;
     })// 🔥 IMPORTANT
     .then(xmlText => {
@@ -115,8 +114,6 @@ export function Register(formData) {
         return response.text(); // Get the response body as text
     })
     .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
         // If you need to work with the XML structure, parse it using DOMParser
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
@@ -158,8 +155,6 @@ export function Changepassword(formData){
       
         const text = await response.text();
       
-        console.log("RAW SOAP RESPONSE:", text);
-      
         if (!text || text.trim() === "") {
           throw new Error("Empty SOAP response");
         }
@@ -181,7 +176,6 @@ export function Changepassword(formData){
 /* ================= PURCHASE ITEM ================= */
 export function purchaseItem(newTransaction) {
 const randomNumber = Math.floor(10000 + Math.random() * 90000);
-  console.log("newTransaction:", newTransaction);
   const payloadItems = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 	<soap:Body>
@@ -222,8 +216,6 @@ const randomNumber = Math.floor(10000 + Math.random() * 90000);
         }
       
         const text = await response.text();
-      
-        console.log("RAW SOAP RESPONSE:", text);
       
         if (!text || text.trim() === "") {
           throw new Error("Empty SOAP response");
@@ -553,7 +545,6 @@ export function ticket_select() {
     .then(xmlText => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-      console.log("RAW XML:", xmlText);
       const items = Array.from(
         xmlDoc.getElementsByTagNameNS("*", "TicketList")
       );

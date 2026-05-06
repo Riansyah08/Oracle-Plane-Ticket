@@ -17,10 +17,12 @@ useEffect(() => {
       if (!res.ok) throw new Error("Failed");
 
       const data = await res.json();
+      if (!data || data.length === 0) {
+        alert("Redeem Points Page is in Maintenance Right Now");
+        return;
+      }
 
-      console.log("ALL Items:", data);
       setAllItems(data);
-
     } catch (err) {
       console.error("❌ ERROR:", err);
     }
@@ -29,16 +31,32 @@ useEffect(() => {
   loadItems();
 }, [refreshKey]); // only for items
 
-  const handleRedeemItem = async (item) => {
+const waitForUpdatedUser = async (email, password, oldPoints) => {
+  for (let i = 0; i < 5; i++) {
+    const updated = await loginUser({ email, password });
+
+    if (updated.points_balance !== oldPoints) {
+      return updated; // ✅ updated
+    }
+
+    await new Promise(res => setTimeout(res, 400));
+  }
+
+  throw new Error("User not updated yet");
+};
+
+const handleRedeemItem = async (item) => {
   try {
     const latestUser = await loginUser({
       email: user.email,
       password: user.password,
     });
 
+    const oldPoints = latestUser.points_balance;
+
     const tierOrder = ["Silver", "Gold", "Platinum"];
 
-    if (latestUser.points_balance < item.price) {
+    if (oldPoints < item.price) {
       alert("Insufficient points!");
       return;
     }
@@ -51,7 +69,7 @@ useEffect(() => {
       return;
     }
 
-    // 🔥 purchase
+    // 🔥 STEP 1: do transaction
     await purchaseItem({
       email: latestUser.email,
       password: latestUser.password,
@@ -59,30 +77,24 @@ useEffect(() => {
       amount: 1,
     });
 
-    // 🔥 refresh user HERE (not in useEffect)
-    try {
-      const updatedUser = await loginUser({
-        email: latestUser.email,
-        password: latestUser.password,
-      });
+    // 🔥 STEP 2: WAIT until backend updates
+    const updatedUser = await waitForUpdatedUser(
+      latestUser.email,
+      latestUser.password,
+      oldPoints
+    );
 
-      if (updatedUser && updatedUser.email) {
-        setCurrentUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      }
+    // 🔥 STEP 3: update state (THIS updates UI)
+    setCurrentUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
 
-    } catch (err) {
-      console.warn("User refresh failed, keeping old state");
-    }
-
-    // 🔥 refresh items only
+    // 🔥 STEP 4: refresh items
     setRefreshKey(prev => prev + 1);
-
     alert(`${item.name} redeemed successfully!`);
 
   } catch (err) {
     console.error(err);
-    alert("Redemption failed");
+    alert("Failed or delayed. Try again.");
   }
 };
 
@@ -111,12 +123,16 @@ useEffect(() => {
                     {item.minTier} Tier
                   </p>
                   <p>{item.price} pts</p>
+                  <p>{item.description}</p>
                   <p>Item Remaining: {item.stock}</p>
                 </div>
                 
                 <button
                   onClick={() => handleRedeemItem(item)}
-                  className={`${getbuttoncolour(user.points_balance < item.points)} rounded-lg max-h-15 mt-5 font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:bg-green-400`}
+                  disabled={user.points_balance < item.price || item.stock <= 0}
+                  className={`${getbuttoncolour(user.points_balance < item.points)} 
+                  rounded-lg max-h-15 mt-8 font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:bg-green-400 
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-400`}
                 >
                    Redeem
                 </button>
@@ -124,7 +140,7 @@ useEffect(() => {
             </div>
           ))}
 
-          {rewardItems.length === 0 && (
+          {allItems.length === 0 && (
             <p className="text-center text-gray-500">
               No rewards available
             </p>

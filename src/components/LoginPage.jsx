@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plane, LogIn, KeyRound } from "lucide-react";
+import { Plane, LogIn, KeyRound, User } from "lucide-react";
 import { Register, loginUser, Changepassword } from "../utils/fetch";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
@@ -16,7 +16,6 @@ function LoginPage({ onLogin }) {
     full_name: "",
     phone_number: ""
   });
-
   const set = (field) => (v) => setFormData((prev) => ({ ...prev, [field]: v })); // ✅ added
 
   /* ================= LOGIN ================= */
@@ -36,6 +35,8 @@ function LoginPage({ onLogin }) {
 
       // 🔹 LoginPage does NOT care how transactions are fetched
       onLogin(user);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("lastActivity", Date.now());
     } catch (err) {
       console.error(err);
       alert("Login failed");
@@ -81,6 +82,14 @@ function LoginPage({ onLogin }) {
     }
   };
 
+  //*Data Helper
+  const emptyForm = {
+    email: "",
+    password: "",
+    confirmPassword: "",
+    full_name: "",
+    phone_number: ""
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4 gap-5">
 
@@ -94,7 +103,7 @@ function LoginPage({ onLogin }) {
         {view !== "changePassword" && (
           <div className="flex mb-6 gap-0.5 bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setView("login")}
+              onClick={() => {setView("login"); setFormData(emptyForm);}}
               className={`flex-1 py-2 rounded-lg transition-colors duration-300 ${
                 view === "login" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-300 hover:text-white"
               }`}
@@ -102,7 +111,7 @@ function LoginPage({ onLogin }) {
               Login
             </button>
             <button
-              onClick={() => setView("register")}
+              onClick={() => {setView("register"); setFormData(emptyForm);}}
               className={`flex-1 py-2 rounded-lg transition-colors duration-300 ${
                 view === "register" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-blue-300 hover:text-white"
               }`}
@@ -114,36 +123,36 @@ function LoginPage({ onLogin }) {
 
         {/* ── LOGIN ── */}
         {view === "login" && (
-  <>
-    <Input label="Email" type="email" value={formData.email} onChange={set("email")} />
-    <PasswordInput
-      label="Password"
-      value={formData.password}
-      show={showPassword}
-      onToggle={() => setShowPassword(!showPassword)}
-      onChange={set("password")}
-    />
-    <button
-      onClick={handleLogin}
-      disabled={loading}
-      className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center mt-2"
-    >
-      <LogIn className="w-5 h-5 mr-2" />
-      {loading ? "Logging in..." : "Login"}
-    </button>
+          <>
+            <Input label="Email Login" type="email" value={formData.email} onChange={set("email")} />
+            <PasswordInput
+              label="Password"
+              value={formData.password}
+              show={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+              onChange={set("password")}
+            />
+            <button
+              onClick={async () => {await handleLogin(); setView("login");}}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center mt-2"
+            >
+              <LogIn className="w-5 h-5 mr-2" />
+              {loading ? "Logging in..." : "Login"}
+            </button>
 
-    {/* 👇 Add this here */}
-    <div className="text-center mt-3">
-      
-       <a href="#"
-        onClick={(e) => { e.preventDefault(); setView("changePassword"); }}
-        className="text-blue-600 text-sm hover:underline"
-      >
-        Change Password
-      </a>
-    </div>
-  </>
-)}
+            {/* 👇 Add this here */}
+            <div className="text-center mt-3">
+
+               <a href="#"
+                onClick={(e) => { e.preventDefault(); setView("changePassword"); setFormData(emptyForm);}}
+                className="text-blue-600 text-sm hover:underline"
+              >
+                Change Password
+              </a>
+            </div>
+          </>
+        )}
 
         {/* ── REGISTER ── */}
         {view === "register" && (
@@ -159,10 +168,11 @@ function LoginPage({ onLogin }) {
               onChange={set("password")}
             />
             <button
-              onClick={handleRegister}
+              onClick={async () => {await handleRegister(); setView("register");}}
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg mt-2"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center mt-2"
             >
+              <User className="w-5 h-5 mr-2"/>
               {loading ? "Registering..." : "Register"}
             </button>
           </>
@@ -191,7 +201,7 @@ function LoginPage({ onLogin }) {
               <p className="text-red-500 text-sm mb-3 -mt-2">Passwords do not match.</p>
             )}
             <button
-              onClick={handleChangePassword}
+              onClick={async () => {await handleChangePassword(); setView("changePassword"); setFormData(emptyForm);}}
               disabled={loading}
               className="w-full bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center mt-2"
             >
@@ -199,7 +209,7 @@ function LoginPage({ onLogin }) {
               {loading ? "Updating..." : "Change Password"}
             </button>
             <button
-              onClick={() => setView("login")}
+              onClick={() => {setView("login"); setFormData(emptyForm);}}
               className="w-full mt-3 text-blue-600 text-sm hover:underline"
             >
               ← Back to Login
@@ -214,7 +224,6 @@ function LoginPage({ onLogin }) {
 }
 
 /* ── Shared components ── */
-
 function Input({ label, value, onChange, type = "text" }) {
   return (
     <div className="mb-4">

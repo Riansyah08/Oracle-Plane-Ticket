@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef} from "react";
 import LoginPage from "./components/LoginPage";
 import HomePage from "./components/HomePage";
 import BookFlightPage from "./components/BookFlightPage";
@@ -14,6 +14,70 @@ function App({}) {
   // 🔥 REAL DATA (NO DUMMY)
   const [rewardItems, setRewardItems] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  const IDLE_TIME = 30 * 60 * 1000;
+  const timeoutRef = useRef(null);
+
+  const resetTimer = () => {
+    // Save last activity
+    localStorage.setItem("lastActivity", Date.now());
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(() => {
+      handleLogout();
+    }, IDLE_TIME);
+  };
+
+  useEffect(() => {
+  const events = ["mousemove", "keydown", "click", "scroll"];
+
+  const handleActivity = () => {
+    resetTimer();
+  };
+
+  events.forEach(event =>
+    window.addEventListener(event, handleActivity)
+  );
+
+// 🔥 Restore timer after refresh
+const lastActivity = localStorage.getItem("lastActivity");
+
+  if (lastActivity) {
+    const diff = Date.now() - lastActivity;
+
+    if (diff > IDLE_TIME) {
+      handleLogout();
+    } else {
+      timeoutRef.current = setTimeout(
+        handleLogout,
+        IDLE_TIME - diff
+      );
+    }
+  } else {
+    resetTimer();
+  }
+
+  return () => {
+    events.forEach(event =>
+      window.removeEventListener(event, handleActivity)
+    );
+    clearTimeout(timeoutRef.current);
+  };
+}, []);
+
+useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+
+  if (storedUser) {
+    const parsedUser = JSON.parse(storedUser);
+    setCurrentUser(parsedUser);
+    setCurrentPage("home"); // or "purchase" if you want default
+  }
+
+  setLoading(false);
+}, []);
 
   /* ================= LOGIN ================= */
   const handleLogin = async (user) => {
@@ -25,6 +89,11 @@ function App({}) {
         email: user.email,
         password: user.password
       });
+
+      if (!txs || txs.length === 0) {
+        alert("Transaction History Page is in Maintenance Right Now");
+        return;
+      }
       setTransactions(txs);
     } catch (err) {
       console.error("Failed to load initial data:", err);
@@ -33,7 +102,7 @@ function App({}) {
 
   const isUserInvalid = !currentUser || currentUser.user_id === undefined || currentUser.full_name === '';
 
-  if (currentPage === "home" && isUserInvalid) {
+  if (!currentUser && currentPage !== "purchase") {
     return <LoginPage onLogin={handleLogin} />;
   }
 
@@ -41,7 +110,8 @@ function App({}) {
     setCurrentUser(null);
     setRewardItems([]);
     setTransactions([]);
-    setCurrentPage("login");
+    localStorage.removeItem("user");
+    localStorage.removeItem("lastActivity");
   };
 
   /* ================= USER UPDATE ================= */
@@ -57,24 +127,6 @@ function App({}) {
   /* ================= ROUTING ================= */
   if (currentPage === "login") {
     return <LoginPage onLogin={handleLogin} />;
-  }
-  
-  if (currentPage === "purchase") {
-    return <div className="h-screen flex flex-col bg-indigo-200 overflow-hidden">
-      <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} user={currentUser}/>
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-4">
-          {currentPage === "purchase" && (
-            <BookFlightPage
-              user={currentUser}
-              setCurrentUser={setCurrentUser}
-              addTransaction={addTransaction}
-            />
-          )}
-        </div>
-      </div>
-    </div>
   }
 
   return (

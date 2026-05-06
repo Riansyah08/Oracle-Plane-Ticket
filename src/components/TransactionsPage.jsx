@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { Transactionlog } from "../utils/fetch";
-import {item_select} from "../utils/fetch";
 
 function TransactionsPage({ user, rewardItems }) {
   const [transactions, setTransactions] = useState([]);
@@ -19,7 +18,6 @@ function TransactionsPage({ user, rewardItems }) {
       password: user.password // ✅ FIXED
     })
       .then(data => {
-        console.log("Fetched transactions:", data); // debug
         setTransactions(Array.isArray(data) ? data : []);
       })
       .catch(err => {
@@ -115,7 +113,7 @@ const formatDescription = (desc) => {
                       isBuyTicket ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    {isBuyTicket ? "+" : "-"}
+                    {isBuyTicket ? "+" : "Remaining "}
                     {displayPoints} pts
                   </p>
 

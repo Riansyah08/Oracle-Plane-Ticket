@@ -24,7 +24,7 @@ function BookFlightPage({ user, setCurrentUser }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [departureDate, setDepartureDate] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
-
+  const [hasSearched, setHasSearched] = useState(false);
 
   /* ---------------- Helpers ---------------- */
   const normalize = v => v?.trim().toLowerCase();
@@ -38,24 +38,25 @@ function BookFlightPage({ user, setCurrentUser }) {
       : '-';
 
   /* ---------------- Load ALL flights (once) ---------------- */
-  useEffect(() => {
-    const loadFlights = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/planes");
+  const loadFlights = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/planes");
+
+      if (!res.ok) throw new Error("Failed");
       
-        if (!res.ok) throw new Error("Failed");
-      
-        const data = await res.json();
-      
-        console.log("ALL FLIGHTS:", data);
-      
-        setAllFlights(data);
-      
-      } catch (err) {
-        console.error("❌ ERROR:", err);
+      const data = await res.json();
+      if (!data || data.length === 0) {
+        alert("The Flight Purchase is in Maintenance Right Now");
+        return;
       }
-    };
-  
+
+      setAllFlights(data);
+    } catch (err) {
+      console.error("❌ ERROR:", err);
+    }
+  };
+
+  useEffect(() => {
     loadFlights();
   }, [refreshKey]);
   
@@ -86,19 +87,30 @@ function BookFlightPage({ user, setCurrentUser }) {
   }, [allFlights]);
 
   /* ---------------- Search (frontend filter) ---------------- */
-  const handleSearchFlights = () => {
-    if (!selectedFrom || !selectedTo) {
-      alert('Please select both cities');
-      return;
-    }
-
+  useEffect(() => {
+    if (!hasSearched) return; // 🚨 key line
+  
     const results = allFlights.filter(
       f =>
         normalize(f.planeAddressFrom) === normalize(selectedFrom) &&
         normalize(f.planeAddressTo) === normalize(selectedTo)
     );
-
+  
     setFilteredFlights(results);
+  }, [allFlights, selectedFrom, selectedTo, hasSearched]);
+  
+  const handleSearchFlights = () => {
+  if (!selectedFrom || !selectedTo) {
+      alert('Please select both cities');
+      return;
+    }
+
+    if (!departureDate || !arrivalDate) {
+      alert("Choose The Date First!!");
+      return;
+    }
+
+    setHasSearched(true); // ✅ trigger results
   };
 
   /* ---------------- Seat Checker ---------------- */
@@ -107,7 +119,6 @@ function BookFlightPage({ user, setCurrentUser }) {
       try {
         setLoading(true);
         const tickets = await ticket_select();
-        console.log('Ticket Data:', tickets);
         setAllTickets(tickets);
       } catch (err) {
         console.error('Failed to load Ticket Data', err);
@@ -119,39 +130,63 @@ function BookFlightPage({ user, setCurrentUser }) {
     loadTickets();
   }, []);
 
+const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
+  for (let i = 0; i < 5; i++) {
+    const updated = await loginUser({ email, password });
+
+    if (updated.points_balance !== oldPoints) {
+      return updated; // ✅ updated
+    }
+
+    if (updated.km_hit !== oldKmHit) {
+      return updated; // ✅ updated
+    }
+
+    await new Promise(res => setTimeout(res, 400));
+  }
+
+  throw new Error("User not updated yet");
+};
+
   /* ---------------- Purchase ---------------- */
-  const handlePurchaseFlight = async (tx) => {
-  try {
-    setLoading(true);
-
-    const payload = {
-      email: user.email,
-      password: user.password,
-      planeAddressFrom: tx.planeAddressFrom,
-      planeAddressTo: tx.planeAddressTo,
-      planeId: tx.planeId,
-      planeSeat: tx.seat,
-      DepartureDate: tx.departureDate,
-      ArrivalDate: tx.arrivalDate
-    };
-
-    console.log("FINAL payload to SOAP:", payload);
-    
-    await purchasePlane(payload);
-    const freshUser = await loginUser({
+  const handlePurchaseFlight = async (tx) => { 
+    try {
+      const latestUser = await loginUser({
         email: user.email,
         password: user.password,
       });
-    // 🔥 replace global state
-    setCurrentUser(freshUser);
-    alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
-  } catch (err) {
-    console.error(err);
-    alert('❌ Failed to purchase flight.');
-  } finally {
-    setLoading(false);
-  }
-};
+
+      const oldPoints = latestUser.points_balance;
+      const oldKmHit = latestUser.km_hit;
+
+      await purchasePlane({
+        email: user.email,
+        password: user.password,
+        planeAddressFrom: tx.planeAddressFrom,
+        planeAddressTo: tx.planeAddressTo,
+        planeId: tx.planeId,
+        planeSeat: tx.seat,
+        DepartureDate: tx.departureDate,
+        ArrivalDate: tx.arrivalDate
+      });
+
+      const updatedUser = await waitForUpdatedUser(
+        latestUser.email,
+        latestUser.password,
+        oldPoints,
+        oldKmHit
+      );
+      // 🔥 replace global state
+      setCurrentUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
+    } catch (err) {
+      console.error(err);
+      alert('❌ Failed to purchase flight.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -287,7 +322,7 @@ function BookFlightPage({ user, setCurrentUser }) {
                     </p>
 
                     <p className="text-gray-600">
-                      Total Seat: {flight.total_seat}
+                      Total Seat Available: {flight.total_seat}
                     </p>
 
                     <p className="text-gray-600">
@@ -305,7 +340,7 @@ function BookFlightPage({ user, setCurrentUser }) {
                     <p className="text-gray-700 font-semibold mt-7 mb-3 mr-2">
                       Rp {flight.price.toLocaleString()}
                     </p>
-                    {flight.availability === "Y" ? (
+                    {flight.availability === "Y" && flight.total_seat > 0 ? (
                       <button
                         onClick={() => {
                           if (!user?.user_id) {
@@ -405,13 +440,16 @@ function BookFlightPage({ user, setCurrentUser }) {
                       departureDate,
                       arrivalDate
                     });
+
+                      await loadFlights();
+                                      
                       // force seat grid to remount
                       setRefreshKey(prev => prev + 1);
                                       
                       // reset UI
                       setSelectedSeat(null);
                       setShowSeatPicker(false);
-                                      
+                    
                       // OPTIONAL: re-fetch tickets so seats become taken
                       const tickets = await ticket_select();
                       setAllTickets(tickets);
