@@ -46,6 +46,10 @@ function BookFlightPage({ user, setCurrentUser }) {
       
       const data = await res.json();
       if (!data || data.length === 0) {
+        setCurrentUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("lastActivity");
+        
         alert("The Flight Purchase is in Maintenance Right Now");
         return;
       }
@@ -133,12 +137,10 @@ function BookFlightPage({ user, setCurrentUser }) {
 const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
   for (let i = 0; i < 5; i++) {
     const updated = await loginUser({ email, password });
+    const pointsChanged = updated.points_balance !== oldPoints;
+    const kmHitChanged = updated.km_hit !== oldKmHit;
 
-    if (updated.points_balance !== oldPoints) {
-      return updated; // ✅ updated
-    }
-
-    if (updated.km_hit !== oldKmHit) {
+    if (updated.points_balance > oldPoints || updated.km_hit > oldKmHit) {
       return updated; // ✅ updated
     }
 

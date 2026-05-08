@@ -18,6 +18,10 @@ useEffect(() => {
 
       const data = await res.json();
       if (!data || data.length === 0) {
+        setCurrentUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("lastActivity");
+        
         alert("Redeem Points Page is in Maintenance Right Now");
         return;
       }

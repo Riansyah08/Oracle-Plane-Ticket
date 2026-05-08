@@ -5,8 +5,9 @@ const TRANSACTIONLOG_URL = "/Ticket/init/Service/BPM/Biz/UserTicketDisplayBizSer
 const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizService";
 const ITEMLIST_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
 const Plansesch_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
-const Ticketsearch_URL = "/Ticket/init/Service/BPM/Biz/TicketInfoBizService"
+const Ticketsearch_URL = "/Ticket/init/Service/BPM/Biz/TicketInfoBizService";
 const Changepassword_URL = "/Ticket/init/Service/BPM/Biz/UserChangePWBizService";
+const Maintenance_URL = "/Ticket/init/Service/BPM/Biz/MaintenanceCheckBizService";
 
 // Login logic payload fetching 
 export function loginUser(formData) {
@@ -569,5 +570,60 @@ export function ticket_select() {
           item.getElementsByTagNameNS("*", "planeScheduleArrive")[0]?.textContent
         )  
       }));
+    });
+}
+
+// MaintenanceCheck 
+export function MaintenanceCheck(formData) {
+  const payloadMaintenance = `
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MaintenenceCheck" xmlns:ns2="http://www.permatabank.com/Maintenance">
+			<ns2:MaintenanceCheckRq>
+				<ns2:LogCheck>${formData.datacheck}</ns2:LogCheck>
+			</ns2:MaintenanceCheckRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
+`;
+
+return fetch(Maintenance_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml",
+    "Accept": "text/xml"
+  },
+  body: payloadMaintenance
+})
+    .then(res => {
+      console.log("HTTP STATUS:", res.status);
+      return res.text(); // ✅ THIS WAS MISSING
+    })
+    .then(xmlText => {
+      return xmlText;
+    })// 🔥 IMPORTANT
+    .then(xmlText => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+      const userNode =
+        xmlDoc.getElementsByTagNameNS("*", "MaintenanceCheckRs")[0];
+
+      if (!userNode) {
+        throw new Error("Invalid SOAP response");
+      }
+
+      const statusCode =
+        userNode.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
+      if (statusCode !== "00") {
+        const statusDesc =
+          userNode.getElementsByTagNameNS("*", "StatusDesc")[0]?.textContent;
+          throw new Error(statusDesc || "Login failed");
+      }
+      // ✅ SUCCESS
+      return {
+        log_check: userNode.getElementsByTagNameNS("*", "LogCheck")[0]?.textContent,
+        availability: userNode.getElementsByTagNameNS("*", "Availability")[0]?.textContent
+      };
     });
 }

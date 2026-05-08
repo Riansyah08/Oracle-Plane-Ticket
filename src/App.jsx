@@ -5,7 +5,7 @@ import BookFlightPage from "./components/BookFlightPage";
 import RewardsPage from "./components/RewardsPage";
 import TransactionsPage from "./components/TransactionsPage";
 import Navbar from "./components/Navbar";
-import { Transactionlog } from "./utils/fetch";
+import { MaintenanceCheck, Transactionlog } from "./utils/fetch";
 
 function App({}) {
   const [currentPage, setCurrentPage] = useState("purchase");
@@ -15,6 +15,10 @@ function App({}) {
   const [rewardItems, setRewardItems] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [MaintenanceChk, setMaintenanceChk] = useState([]);
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [isLoginMaintenance, setIsLoginMaintenance] = useState(false);
+  const [checkingMaintenance, setCheckingMaintenance] = useState(true);
   
   const IDLE_TIME = 30 * 60 * 1000;
   const timeoutRef = useRef(null);
@@ -81,30 +85,66 @@ useEffect(() => {
 
   /* ================= LOGIN ================= */
   const handleLogin = async (user) => {
-    setCurrentUser(user);
-    setCurrentPage("home");
+      setCurrentUser(user);
+      setCurrentPage("home");
     try {
       // 📜 Load transactions
       const txs = await Transactionlog({
         email: user.email,
         password: user.password
       });
-
-      if (!txs || txs.length === 0) {
-        alert("Transaction History Page is in Maintenance Right Now");
-        return;
-      }
       setTransactions(txs);
     } catch (err) {
       console.error("Failed to load initial data:", err);
     }
   };
 
-  const isUserInvalid = !currentUser || currentUser.user_id === undefined || currentUser.full_name === '';
+  useEffect(() => {
+    const checkMaintenance = async () => {
+      try {
+        const mtscheck = await MaintenanceCheck({
+          datacheck: "DASHBOARD"
+        });
 
-  if (!currentUser && currentPage !== "purchase") {
-    return <LoginPage onLogin={handleLogin} />;
-  }
+        const mtschecklogin = await MaintenanceCheck({
+          datacheck: "LOGIN"
+        });
+
+        if (mtscheck.availability === "N") {
+          setIsMaintenance(true);
+
+          // 🔥 FORCE LOGOUT EVERYTHING
+          setCurrentUser(null);
+          localStorage.removeItem("user");
+          localStorage.removeItem("lastActivity");
+        }
+
+        if (mtschecklogin.availability === "N") {
+          setIsLoginMaintenance(true);
+        }
+      } catch (err) {
+        console.error("Maintenance check failed:", err);
+      } finally {
+        setCheckingMaintenance(false);
+      }
+    };
+
+    checkMaintenance();
+  }, []);
+
+  useEffect(() => {
+    if (isMaintenance) return;
+
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setCurrentUser(parsedUser);
+      setCurrentPage("home");
+    }
+
+    setLoading(false);
+  }, [isMaintenance]);
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -125,8 +165,48 @@ useEffect(() => {
   };
 
   /* ================= ROUTING ================= */
+  if (currentPage === "login" && isLoginMaintenance) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-indigo-200">
+        <div className="bg-white p-10 rounded-xl shadow-xl text-center">
+          <h1 className="text-3xl font-bold mb-4">
+            System Under Maintenance
+          </h1>
+
+          <p className="text-gray-600">
+            Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   if (currentPage === "login") {
     return <LoginPage onLogin={handleLogin} />;
+  } 
+
+  if (!currentUser && currentPage !== "purchase") {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  if (checkingMaintenance) {
+    return <div>Loading...</div>;
+  }
+
+  if (isMaintenance) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-indigo-200">
+        <div className="bg-white p-10 rounded-xl shadow-xl text-center">
+          <h1 className="text-3xl font-bold mb-4">
+            System Under Maintenance
+          </h1>
+
+          <p className="text-gray-600">
+            Please try again later.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
