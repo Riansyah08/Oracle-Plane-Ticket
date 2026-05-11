@@ -45,14 +45,6 @@ function BookFlightPage({ user, setCurrentUser }) {
       if (!res.ok) throw new Error("Failed");
       
       const data = await res.json();
-      if (!data || data.length === 0) {
-        setCurrentUser(null);
-        localStorage.removeItem("user");
-        localStorage.removeItem("lastActivity");
-        
-        alert("The Flight Purchase is in Maintenance Right Now");
-        return;
-      }
 
       setAllFlights(data);
     } catch (err) {
@@ -63,7 +55,12 @@ function BookFlightPage({ user, setCurrentUser }) {
   useEffect(() => {
     loadFlights();
   }, [refreshKey]);
-  
+
+
+  if (allFlights.length === 0) {
+    alert("The Flight Purchase is in Maintenance Right Now");
+  }
+
   /* ---------------- Build city dropdowns from DB data ---------------- */
   useEffect(() => {
     if (allFlights.length === 0) return;
@@ -109,7 +106,7 @@ function BookFlightPage({ user, setCurrentUser }) {
       return;
     }
 
-    if (!departureDate || !arrivalDate) {
+    if (!departureDate) {
       alert("Choose The Date First!!");
       return;
     }
@@ -137,9 +134,7 @@ function BookFlightPage({ user, setCurrentUser }) {
 const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
   for (let i = 0; i < 5; i++) {
     const updated = await loginUser({ email, password });
-    const pointsChanged = updated.points_balance !== oldPoints;
-    const kmHitChanged = updated.km_hit !== oldKmHit;
-
+    
     if (updated.points_balance > oldPoints || updated.km_hit > oldKmHit) {
       return updated; // ✅ updated
     }
@@ -169,7 +164,7 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
         planeId: tx.planeId,
         planeSeat: tx.seat,
         DepartureDate: tx.departureDate,
-        ArrivalDate: tx.arrivalDate
+        ArrivalDate: "2014-09-19T06:18:33"
       });
 
       const updatedUser = await waitForUpdatedUser(
@@ -268,28 +263,9 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
               onChange={(e) => {
                 const values = e.target.value;
                 setDepartureDate(values);
-
-                if (arrivalDate && values > arrivalDate) {
-                  setArrivalDate("");
-                }
               }}
               className="border rounded-lg px-4 py-2 w-48"
               min={new Date().toISOString().split("T")[0]}
-            />
-          </div>
-
-          {/* Arrival grid */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold mb-1">
-              Arrival Date
-            </label>
-            <input
-              type="date"
-              value={arrivalDate || ""}
-              onChange={(e) => setArrivalDate(e.target.value)}
-              className="border rounded-lg px-4 py-2 w-48"
-              min={departureDate || new Date().toISOString().split("T")[0]}
-              disabled={!departureDate}
             />
           </div>
         </div>
