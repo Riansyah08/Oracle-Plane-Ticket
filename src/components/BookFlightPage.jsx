@@ -58,7 +58,7 @@ function BookFlightPage({ user, setCurrentUser }) {
 
 
   if (allFlights.length === 0) {
-    alert("The Flight Purchase is in Maintenance Right Now");
+    return <img src="..\\OracleSky_UI\\Oracle-Plane-Ticket\\src\\assets\\icons8-spinner-50.gif" alt="Loading..." />;
   }
 
   /* ---------------- Build city dropdowns from DB data ---------------- */
