@@ -6,6 +6,7 @@ import RewardsPage from "./components/RewardsPage";
 import TransactionsPage from "./components/TransactionsPage";
 import Navbar from "./components/Navbar";
 import { MaintenanceCheck, Transactionlog } from "./utils/fetch";
+import spinner from "./assets/icons8-spinner-50.gif";
 
 function App({}) {
   const [currentPage, setCurrentPage] = useState("purchase");
@@ -190,7 +191,11 @@ useEffect(() => {
   }
 
   if (checkingMaintenance) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <img src={spinner} alt="Loading..." />
+      </div>
+    )
   }
 
   if (isMaintenance) {

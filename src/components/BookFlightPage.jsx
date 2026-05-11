@@ -4,6 +4,7 @@ import { purchasePlane } from '../utils/fetch.js';
 import {discount} from '../utils/helpers.js';
 import { ticket_select } from '../utils/fetch.js';
 import { loginUser } from '../utils/fetch.js';
+import spinner from "../assets/icons8-spinner-50.gif";
 
 function BookFlightPage({ user, setCurrentUser }) {
   const [allFlights, setAllFlights] = useState([]);
@@ -55,11 +56,6 @@ function BookFlightPage({ user, setCurrentUser }) {
   useEffect(() => {
     loadFlights();
   }, [refreshKey]);
-
-
-  if (allFlights.length === 0) {
-    return <img src="..\\OracleSky_UI\\Oracle-Plane-Ticket\\src\\assets\\icons8-spinner-50.gif" alt="Loading..." />;
-  }
 
   /* ---------------- Build city dropdowns from DB data ---------------- */
   useEffect(() => {
@@ -184,6 +180,10 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
       setLoading(false);
     }
   };
+
+  if (allFlights.length === 0) {
+    return <img src={spinner} alt="Loading..." />;
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
