@@ -8,9 +8,11 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    host: true,
+    port: 5173,
     proxy: {
       '/Ticket': {
-        target: 'http://localhost:15103', // ⚠ use IPv4, not ::1
+        target: 'http://10.252.158.86:15103', // ⚠ use IPv4, not ::1
         changeOrigin: true,
         secure: false,
       }

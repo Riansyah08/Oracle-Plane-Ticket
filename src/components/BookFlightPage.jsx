@@ -6,26 +6,32 @@ import { ticket_select } from '../utils/fetch.js';
 import { loginUser } from '../utils/fetch.js';
 import spinner from "../assets/icons8-spinner-50.gif";
 
-function BookFlightPage({ user, setCurrentUser }) {
+function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, setFlightSearchState }) {
   const [allFlights, setAllFlights] = useState([]);
   const [allTickets, setAllTickets] = useState([]);
-  const [filteredFlights, setFilteredFlights] = useState([]);
 
   const [fromCities, setFromCities] = useState([]);
   const [toCities, setToCities] = useState([]);
 
-  const [selectedFrom, setSelectedFrom] = useState('');
-  const [selectedTo, setSelectedTo] = useState('');
-
   const [loading, setLoading] = useState(false);
+  const [hasAutoPurchased, setHasAutoPurchased] = useState(false);
 
   const [showSeatPicker, setShowSeatPicker] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [departureDate, setDepartureDate] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
+  const [isRefreshingUser, setIsRefreshingUser] = useState(false);
+  const {
+    selectedFrom,
+    selectedTo,
+    departureDate,
+    filteredFlights,
+    hasSearched
+  } = flightSearchState;
+  const HOST = "10.252.158.86";
+  const PORT = "3001";
+  const BASE_URL = `http://${HOST}:${PORT}`;
 
   /* ---------------- Helpers ---------------- */
   const normalize = v => v?.trim().toLowerCase();
@@ -41,7 +47,7 @@ function BookFlightPage({ user, setCurrentUser }) {
   /* ---------------- Load ALL flights (once) ---------------- */
   const loadFlights = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/planes");
+      const res = await fetch(BASE_URL + "/api/planes");
 
       if (!res.ok) throw new Error("Failed");
       
@@ -85,7 +91,8 @@ function BookFlightPage({ user, setCurrentUser }) {
 
   /* ---------------- Search (frontend filter) ---------------- */
   useEffect(() => {
-    if (!hasSearched) return; // 🚨 key line
+    if (!hasSearched) return;
+    if (allFlights.length === 0) return;
   
     const results = allFlights.filter(
       f =>
@@ -93,21 +100,32 @@ function BookFlightPage({ user, setCurrentUser }) {
         normalize(f.planeAddressTo) === normalize(selectedTo)
     );
   
-    setFilteredFlights(results);
-  }, [allFlights, selectedFrom, selectedTo, hasSearched]);
+    setFlightSearchState(prev => ({
+      ...prev,
+      filteredFlights: results
+    }));
+  }, [
+    allFlights,
+    selectedFrom,
+    selectedTo,
+    hasSearched
+  ]);
   
   const handleSearchFlights = () => {
-  if (!selectedFrom || !selectedTo) {
-      alert('Please select both cities');
-      return;
-    }
+    if (!selectedFrom || !selectedTo) {
+        alert('Please select both cities');
+        return;
+      }
 
-    if (!departureDate) {
-      alert("Choose The Date First!!");
-      return;
-    }
+      if (!departureDate) {
+        alert("Choose The Date First!!");
+        return;
+      }
 
-    setHasSearched(true); // ✅ trigger results
+      setFlightSearchState(prev => ({
+        ...prev,
+        hasSearched: true
+      }));
   };
 
   /* ---------------- Seat Checker ---------------- */
@@ -127,19 +145,52 @@ function BookFlightPage({ user, setCurrentUser }) {
     loadTickets();
   }, []);
 
-const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
-  for (let i = 0; i < 5; i++) {
-    const updated = await loginUser({ email, password });
-    
-    if (updated.points_balance > oldPoints || updated.km_hit > oldKmHit) {
-      return updated; // ✅ updated
+const refreshLatestUser = async (
+  email,
+  password,
+  oldPoints,
+  oldKmHit
+) => {
+  // prevent overlapping refresh loops
+  if (isRefreshingUser) return null;
+
+  setIsRefreshingUser(true);
+
+  try {
+    for (let i = 0; i < 10; i++) {
+      try {
+        const updated = await loginUser({
+          email,
+          password
+        });
+
+        const newPoints = Number(updated?.points_balance || 0);
+        const newKmHit = Number(updated?.km_hit || 0);
+
+        const changed =
+          newPoints !== Number(oldPoints) ||
+          newKmHit !== Number(oldKmHit);
+
+        if (changed) {
+          return updated;
+        }
+
+      } catch (err) {
+        console.log("Polling retry...");
+      }
+
+      await new Promise(res => setTimeout(res, 1000));
     }
 
-    await new Promise(res => setTimeout(res, 400));
-  }
+    return null;
 
-  throw new Error("User not updated yet");
+  } finally {
+    setIsRefreshingUser(false);
+  }
 };
+
+useEffect(() => {
+}, [user]);
 
   /* ---------------- Purchase ---------------- */
   const handlePurchaseFlight = async (tx) => { 
@@ -149,9 +200,10 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
         password: user.password,
       });
 
-      const oldPoints = latestUser.points_balance;
-      const oldKmHit = latestUser.km_hit;
+      const oldPoints = Number(latestUser.points_balance || 0);
+      const oldKmHit = Number(latestUser.km_hit || 0);
 
+      setLoading(true);
       await purchasePlane({
         email: user.email,
         password: user.password,
@@ -163,15 +215,17 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
         ArrivalDate: "2014-09-19T06:18:33"
       });
 
-      const updatedUser = await waitForUpdatedUser(
+      const updatedUser = await refreshLatestUser(
         latestUser.email,
         latestUser.password,
         oldPoints,
         oldKmHit
       );
       // 🔥 replace global state
-      setCurrentUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (updatedUser) {
+        setCurrentUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
       alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
     } catch (err) {
       console.error(err);
@@ -180,6 +234,51 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
       setLoading(false);
     }
   };
+
+useEffect(() => {
+  const autoPurchase = async () => {
+
+    if (hasAutoPurchased) return;
+
+    if (!user?.user_id) return;
+
+    const pending = localStorage.getItem("pendingPurchase");
+
+    if (!pending) return;
+
+    setHasAutoPurchased(true);
+
+    try {
+      const parsed = JSON.parse(pending);
+
+      localStorage.removeItem("pendingPurchase");
+
+      await handlePurchaseFlight({
+        ...parsed.selectedFlight,
+        seat: parsed.selectedSeat,
+        planeId: parsed.selectedFlight.plane_id,
+        departureDate: parsed.departureDate,
+        arrivalDate: parsed.arrivalDate
+      });
+
+      const tickets = await ticket_select();
+      setAllTickets(tickets);
+
+      await loadFlights();
+
+      setRefreshKey(prev => prev + 1);
+
+      setSelectedSeat(null);
+      setShowSeatPicker(false);
+
+    } catch (err) {
+      console.error("Auto purchase failed:", err);
+    }
+  };
+
+  autoPurchase();
+
+}, [user]);
 
   if (allFlights.length === 0) {
     return <img src={spinner} alt="Loading..." />;
@@ -206,10 +305,13 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
               id="fromCity"
               name="fromCity"
               className="w-full px-4 py-3 border rounded-lg"
-              value={selectedFrom}
+              value={flightSearchState.selectedFrom}
               onChange={(e) => {
-                setSelectedFrom(e.target.value);
-                setSelectedTo('');
+                setFlightSearchState(prev => ({
+                  ...prev,
+                  selectedFrom: e.target.value,
+                  selectedTo: ""
+                }));
               }}
             >
               <option value="">Select departure city</option>
@@ -232,8 +334,13 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
               id="toCity"
               name="toCity"
               className="w-full px-4 py-3 border rounded-lg"
-              value={selectedTo}
-              onChange={(e) => setSelectedTo(e.target.value)}
+              value={flightSearchState.selectedTo}
+              onChange={(e) => 
+                setFlightSearchState(prev => ({
+                  ...prev,
+                  selectedTo: e.target.value
+                }))
+              }
               disabled={!selectedFrom}
             >
               <option value="">Select destination city</option>
@@ -259,10 +366,12 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
 
             <input
               type="date"
-              value={departureDate || ""}
+              value={flightSearchState.departureDate || ""}
               onChange={(e) => {
-                const values = e.target.value;
-                setDepartureDate(values);
+                setFlightSearchState(prev => ({
+                  ...prev,
+                  departureDate: e.target.value
+                }));
               }}
               className="border rounded-lg px-4 py-2 w-48"
               min={new Date().toISOString().split("T")[0]}
@@ -321,11 +430,6 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
                     {flight.availability === "Y" && flight.total_seat > 0 ? (
                       <button
                         onClick={() => {
-                          if (!user?.user_id) {
-                            alert("Please Login first!");
-                            window.location.reload();
-                            return;
-                          }
                           setSelectedFlight(flight);
                           setSelectedSeat(null);
                           setShowSeatPicker(true);
@@ -409,7 +513,21 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
                 <button
                   disabled={!selectedSeat || loading || !departureDate}
                   onClick={async () => {
-                    console.log("Sending:", departureDate, arrivalDate);
+                    if (!user?.user_id) {
+                      localStorage.setItem("redirectAfterLogin", "purchase");
+                      localStorage.setItem(
+                        "pendingPurchase",
+                        JSON.stringify({
+                          selectedFlight,
+                          selectedSeat,
+                          departureDate,
+                          arrivalDate
+                        })
+                      );
+                      alert("Please Login first!");
+                      onNavigate("login");
+                      return;
+                    }
 
                     await handlePurchaseFlight({
                       ...selectedFlight,
@@ -419,18 +537,18 @@ const waitForUpdatedUser = async (email, password, oldPoints, oldKmHit) => {
                       arrivalDate
                     });
 
-                      await loadFlights();
-                                      
-                      // force seat grid to remount
-                      setRefreshKey(prev => prev + 1);
-                                      
-                      // reset UI
-                      setSelectedSeat(null);
-                      setShowSeatPicker(false);
-                    
-                      // OPTIONAL: re-fetch tickets so seats become taken
-                      const tickets = await ticket_select();
-                      setAllTickets(tickets);
+                    await loadFlights();
+                                    
+                    // force seat grid to remount
+                    setRefreshKey(prev => prev + 1);
+                                    
+                    // reset UI
+                    setSelectedSeat(null);
+                    setShowSeatPicker(false);
+                  
+                    // OPTIONAL: re-fetch tickets so seats become taken
+                    const tickets = await ticket_select();
+                    setAllTickets(tickets);
                   }}
                   className="px-6 py-2 rounded bg-green-600 text-white font-semibold disabled:opacity-50"
                 >

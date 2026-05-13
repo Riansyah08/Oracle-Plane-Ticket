@@ -12,7 +12,7 @@ import { getTierColor } from '../utils/helpers';
       : '-';
 
 
-function HomePage({ user, onNavigate, callback }) {
+function HomePage({ user, onNavigate }) {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-18 mb-10">

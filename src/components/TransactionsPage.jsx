@@ -94,7 +94,11 @@ const formatDescription = (desc) => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="flex-1">
                   <p className="font-bold text-lg">{tx.type}</p>
-                  <p className="text-gray-600">{formatDescription(tx.description)}</p>
+                  {!tx.ticket_id ? (
+                    <p className="text-gray-600">{formatDescription(tx.description)}</p>
+                  ) : (
+                    <p className="text-gray-600">Ticket ID: {tx.ticket_id}. Plane {formatDescription(tx.description)}</p>
+                  )}
                   <p className="text-sm text-gray-500">
                     {new Date(tx.date).toLocaleString('id-ID', {
                       day: '2-digit',

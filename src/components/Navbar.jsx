@@ -30,11 +30,17 @@ function Navbar({ onNavigate, onLogout, user }) {
 
         {/* Desktop menu */}
         <div className="hidden md:flex gap-4">
-          <button onClick={() => onNavigate('home')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Home</button>
+          {!user?.user_id && (
+            <>
+              <button onClick={() => onNavigate('purchase')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Ticket</button>
+              <button onClick={() => onNavigate('redeem')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Reward</button>
+            </>
+          )}
           {user?.user_id ? (
             <>
-              <button onClick={() => onNavigate('purchase')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Buy Ticket</button>
-              <button onClick={() => onNavigate('redeem')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Redeem</button>
+              <button onClick={() => onNavigate('home')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Home</button>
+              <button onClick={() => onNavigate('purchase')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Ticket</button>
+              <button onClick={() => onNavigate('redeem')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Reward</button>
               <button onClick={() => onNavigate('transactions')} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Transactions</button>
               <button onClick={onLogout} className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-800 transition-all duration-300 ease-in-out">Logout</button>
             </>
@@ -55,11 +61,17 @@ function Navbar({ onNavigate, onLogout, user }) {
       {/* Mobile dropdown */}
       {open && (
         <div className="md:hidden bg-blue-600 px-4 pb-4 space-y-2 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:bg-blue-600">
-          <NavButton onClick={() => onNavigate('home')}>Home</NavButton>
+          {!user?.user_id && (
+            <>
+              <NavButton onClick={() => onNavigate('purchase')}>Ticket</NavButton>
+              <NavButton onClick={() => onNavigate('redeem')}>Reward</NavButton>
+            </>
+          )}
           {user?.user_id ? (
             <>
-              <NavButton onClick={() => onNavigate('purchase')}>Buy Ticket</NavButton>
-              <NavButton onClick={() => onNavigate('redeem')}>Redeem</NavButton>
+              <NavButton onClick={() => onNavigate('home')}>Home</NavButton>
+              <NavButton onClick={() => onNavigate('purchase')}>Ticket</NavButton>
+              <NavButton onClick={() => onNavigate('redeem')}>Reward</NavButton>
               <NavButton onClick={() => onNavigate('transactions')}>Transactions</NavButton>
               <NavButton onClick={onLogout} className="bg-red-500 hover:bg-red-600">Logout</NavButton>
             </>
