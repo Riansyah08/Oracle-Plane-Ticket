@@ -15,6 +15,11 @@ const item_select =
   fetchModule.default ||
   fetchModule;
 
+const ticket_select = 
+  fetchModule.ticket_select ||
+  fetchModule.default
+  fetchModule;
+
 const app = express();
 const PORT = 3001;
 
@@ -300,7 +305,7 @@ return res.json(data);
 });
 
 /* Item API*/
-app.get("/api/items", async (req, res) => {
+app.get("/api/items", async (req, res) => { 
   try {
     const log = fs.readFileSync(
       "D:/Oracle_14/Middleware/Oracle_Home/user_projects/domains/base_domain/transactionLog/osb_server1.esb.log",
@@ -336,6 +341,44 @@ return res.json(data);
   }
 });
 
+/*Gets Ticket Info Coherence*/
+app.get("/api/ticketinfocoherence", async (req, res) => {
+  try {
+    const log = fs.readFileSync(
+      "D:/Oracle_14/Middleware/Oracle_Home/user_projects/domains/base_domain/ticketinfocoherence/osb_server1.esb.log",
+      "utf-8"
+    );
+
+    console.log("LOG SIZE:", log.length);
+
+    const xmlString = getLatestXMLItem(log);
+
+if (!xmlString) {
+  console.log("⚠️ No log → SOAP fallback");
+  const soapData = await ticket_select();
+  return res.json(soapData);
+}
+
+const clean = cleanXMLItem(xmlString);
+const data = parseItemXML(clean);
+
+console.log("✅ PARSED Items:", data.length);
+
+if (data.length === 0) {
+  console.log("⚠️ Empty → SOAP fallback");
+  const soapData = await ticket_select();
+  return res.json(soapData);
+}
+
+return res.json(data);
+
+  } catch (err) {
+    console.error("SERVER ERROR:", err);
+    return res.status(500).json({ error: "Failed to process Ticket" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running http://localhost:${PORT}`);
 });
+
