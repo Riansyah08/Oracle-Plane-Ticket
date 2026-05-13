@@ -8,6 +8,7 @@ function LoginPage({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false); // ✅ added
+  const [isMaintenance, setIsMaintenance] = useState(false); // ✅ added
 
   const [formData, setFormData] = useState({
     email: "",
@@ -39,7 +40,18 @@ function LoginPage({ onLogin }) {
       localStorage.setItem("lastActivity", Date.now());
     } catch (err) {
       console.error(err);
-      alert("Login failed");
+
+      const status = err.response?.status || err.status;
+
+      if (
+        status >= 500 ||
+        err.code === "ERR_NETWORK"
+      ) {
+        setIsMaintenance(true);
+        return;
+      } else {
+        alert("Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -72,7 +84,7 @@ function LoginPage({ onLogin }) {
         Password: formData.password,
         Password2: formData.confirmPassword,
       });
-      alert("Password changed successfully. Please login.");
+      alert("Password change requested. Waiting Approval.");
       setView("login");
     } catch (err) {
       console.error(err);
@@ -90,6 +102,23 @@ function LoginPage({ onLogin }) {
     full_name: "",
     phone_number: ""
   };
+
+  if (isMaintenance) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-indigo-200">
+        <div className="bg-white p-10 rounded-xl shadow-xl text-center">
+          <h1 className="text-3xl font-bold mb-4">
+            System Under Maintenance
+          </h1>
+
+          <p className="text-gray-600">
+            Please try again later.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4 gap-5">
 

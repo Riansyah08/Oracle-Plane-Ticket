@@ -6,16 +6,20 @@ import RewardsPage from "./components/RewardsPage";
 import TransactionsPage from "./components/TransactionsPage";
 import Navbar from "./components/Navbar";
 import { MaintenanceCheck, Transactionlog } from "./utils/fetch";
+import spinner from "./assets/icons8-spinner-50.gif";
 
 function App({}) {
-  const [currentPage, setCurrentPage] = useState("purchase");
+  const [currentPage, setCurrentPage] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+
+    return storedUser ? "home" : "purchase";
+  });
   const [currentUser, setCurrentUser] = useState(null);
 
   // 🔥 REAL DATA (NO DUMMY)
   const [rewardItems, setRewardItems] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [MaintenanceChk, setMaintenanceChk] = useState([]);
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [isLoginMaintenance, setIsLoginMaintenance] = useState(false);
   const [checkingMaintenance, setCheckingMaintenance] = useState(true);
@@ -71,22 +75,15 @@ const lastActivity = localStorage.getItem("lastActivity");
   };
 }, []);
 
-useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-
-  if (storedUser) {
-    const parsedUser = JSON.parse(storedUser);
-    setCurrentUser(parsedUser);
-    setCurrentPage("home"); // or "purchase" if you want default
-  }
-
-  setLoading(false);
-}, []);
-
   /* ================= LOGIN ================= */
   const handleLogin = async (user) => {
       setCurrentUser(user);
-      setCurrentPage("home");
+      localStorage.setItem("user", JSON.stringify(user));
+      const redirectPage =
+        localStorage.getItem("redirectAfterLogin") || "home";
+
+      setCurrentPage(redirectPage);
+      localStorage.removeItem("redirectAfterLogin");
     try {
       // 📜 Load transactions
       const txs = await Transactionlog({
@@ -102,13 +99,9 @@ useEffect(() => {
   useEffect(() => {
     const checkMaintenance = async () => {
       try {
-        const mtscheck = await MaintenanceCheck({
-          datacheck: "DASHBOARD"
-        });
+        const mtscheck = await MaintenanceCheck("DASHBOARD");
 
-        const mtschecklogin = await MaintenanceCheck({
-          datacheck: "LOGIN"
-        });
+        const mtschecklogin = await MaintenanceCheck("LOGIN");
 
         if (mtscheck.availability === "N") {
           setIsMaintenance(true);
@@ -140,7 +133,6 @@ useEffect(() => {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setCurrentUser(parsedUser);
-      setCurrentPage("home");
     }
 
     setLoading(false);
@@ -164,8 +156,25 @@ useEffect(() => {
     setTransactions((prev) => [tx, ...prev]);
   };
 
+/* ---------------- Persist Search State ---------------- */
+const [flightSearchState, setFlightSearchState] = useState({
+  selectedFrom: "",
+  selectedTo: "",
+  departureDate: "",
+  filteredFlights: [],
+  hasSearched: false
+});
+
   /* ================= ROUTING ================= */
   if (currentPage === "login" && isLoginMaintenance) {
+      if (checkingMaintenance) {
+        return (
+          <div className="flex items-center justify-center h-screen">
+            <img src={spinner} alt="Loading..." />
+          </div>
+        )
+      }
+
     return (
       <div className="h-screen flex items-center justify-center bg-indigo-200">
         <div className="bg-white p-10 rounded-xl shadow-xl text-center">
@@ -185,12 +194,16 @@ useEffect(() => {
     return <LoginPage onLogin={handleLogin} />;
   } 
 
-  if (!currentUser && currentPage !== "purchase") {
+  if (!currentUser && currentPage !== "purchase" && currentPage !== "redeem") {
     return <LoginPage onLogin={handleLogin} />;
   }
 
   if (checkingMaintenance) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <img src={spinner} alt="Loading..." />
+      </div>
+    )
   }
 
   if (isMaintenance) {
@@ -224,6 +237,9 @@ useEffect(() => {
               user={currentUser}
               setCurrentUser={setCurrentUser}
               addTransaction={addTransaction}
+              onNavigate={setCurrentPage}   
+              flightSearchState={flightSearchState}
+              setFlightSearchState={setFlightSearchState}
             />
           )}
 
@@ -233,6 +249,7 @@ useEffect(() => {
               setCurrentUser={setCurrentUser}
               rewardItems={rewardItems}
               addTransaction={addTransaction}
+              onNavigate={setCurrentPage}   
             />
           )}
 

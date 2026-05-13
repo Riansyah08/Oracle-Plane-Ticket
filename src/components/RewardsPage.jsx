@@ -4,15 +4,19 @@ import { getTierColor,getbuttoncolour } from "../utils/helpers";
 import { purchaseItem } from "../utils/fetch";
 import { loginUser } from "../utils/fetch";
 
-function RewardsPage({ user, rewardItems, setCurrentUser }) {
+function RewardsPage({ user, onNavigate, setCurrentUser }) {
   const [allItems, setAllItems] = useState([]);
+  const [hasAutoRedeemed, setHasAutoRedeemed] = useState(false);
   /* ---------------- Load ALL Items (once) ---------------- */
   const [refreshKey, setRefreshKey] = useState(0);
+  const HOST = "10.252.158.86";
+  const PORT = "3001";
+  const BASE_URL = `http://${HOST}:${PORT}`;
 
 useEffect(() => {
   const loadItems = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/items");
+      const res = await fetch(BASE_URL + "/api/items");
 
       if (!res.ok) throw new Error("Failed");
 
@@ -102,6 +106,24 @@ const handleRedeemItem = async (item) => {
   }
 };
 
+useEffect(() => {
+  const autoRedeem = async () => {
+    if (hasAutoRedeemed) return;
+    if (!user?.user_id) return;
+    const pending = localStorage.getItem("pendingRedeem");
+    if (!pending) return;
+    setHasAutoRedeemed(true);
+    try {
+      const parsed = JSON.parse(pending);
+      localStorage.removeItem("pendingRedeem");
+      await handleRedeemItem(parsed.item);
+    } catch (err) {
+      console.error("Auto purchase failed:", err);
+    }
+  };
+  autoRedeem();
+}, [user]);
+
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -113,7 +135,7 @@ const handleRedeemItem = async (item) => {
         <p className="mb-6 text-gray-600">
           Points:{" "}
           <span className="font-bold text-purple-600">
-            {user.points_balance?.toLocaleString() ?? "0"}
+            {user?.points_balance?.toLocaleString() ?? "0"}
           </span>
         </p>
 
@@ -132,9 +154,23 @@ const handleRedeemItem = async (item) => {
                 </div>
                 
                 <button
-                  onClick={() => handleRedeemItem(item)}
-                  disabled={user.points_balance < item.price || item.stock <= 0}
-                  className={`${getbuttoncolour(user.points_balance < item.points)} 
+                  onClick={async () => {
+                  if (!user?.user_id) {
+                    localStorage.setItem("redirectAfterLogin", "redeem");
+                    localStorage.setItem(
+                      "pendingRedeem",
+                      JSON.stringify({
+                        item
+                      })
+                    );
+                    alert("Please login first");
+                    onNavigate("login");
+                    return;
+                  }
+                  
+                  handleRedeemItem(item);}}
+                  disabled={user?.points_balance < item.price || item.stock <= 0}
+                  className={`${getbuttoncolour(user?.points_balance < item.points)} 
                   rounded-lg max-h-15 mt-8 font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:bg-green-400 
                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-400`}
                 >

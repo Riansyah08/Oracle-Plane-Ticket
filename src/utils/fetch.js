@@ -1,10 +1,13 @@
 import { DOMParser } from "xmldom";
+const HOST = "10.252.158.86";
+const PORT = "15103";
+const BASE_URL = `http://${HOST}:${PORT}`;
 const LOGIN_URL = "/Ticket/init/Service/BPM/Biz/UserLoginBizService";
 const REGIST_URL = "/Ticket/init/Service/BPM/Biz/UserAccRegistBizService";
 const TRANSACTIONLOG_URL = "/Ticket/init/Service/BPM/Biz/UserTicketDisplayBizService";
 const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizService";
-const ITEMLIST_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
-const Plansesch_URL = "http://localhost:15103/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
+const ITEMLIST_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
+const Plansesch_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
 const Ticketsearch_URL = "/Ticket/init/Service/BPM/Biz/TicketInfoBizService";
 const Changepassword_URL = "/Ticket/init/Service/BPM/Biz/UserChangePWBizService";
 const Maintenance_URL = "/Ticket/init/Service/BPM/Biz/MaintenanceCheckBizService";
@@ -32,14 +35,20 @@ return fetch(LOGIN_URL, {
   },
   body: payloadlogin
 })
-    .then(res => {
+    .then(async (res) => {
       console.log("HTTP STATUS:", res.status);
-      return res.text(); // ✅ THIS WAS MISSING
+
+      const xmlText = await res.text();
+
+      return {
+        status: res.status,
+        xmlText
+      };
     })
     .then(xmlText => {
       return xmlText;
     })// 🔥 IMPORTANT
-    .then(xmlText => {
+    .then(({ status, xmlText }) => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
@@ -47,7 +56,9 @@ return fetch(LOGIN_URL, {
         xmlDoc.getElementsByTagNameNS("*", "UserSelectRs")[0];
 
       if (!userNode) {
-        throw new Error("Invalid SOAP response");
+        const error = new Error("Invalid SOAP response");
+        error.status = status;
+        throw error;
       }
 
       const statusCode =
@@ -101,7 +112,7 @@ export function Register(formData) {
   return fetch(REGIST_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/xml; charset=utf-8",
+    "Content-Type": "text/xml",
     "Accept": "text/xml"
   },
     body: payloadRegis
@@ -120,10 +131,6 @@ export function Register(formData) {
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
         console.log('Parsed XML Document:', xmlDoc);
     })
-    .catch(error => {
-        // Handle network errors or errors from the .then blocks
-        console.error('There was a problem with the fetch operation:', error);
-    });
 }
 
 /*====== Change Password ======*/
@@ -277,7 +284,6 @@ const randomNumber = Math.floor(10000 + Math.random() * 90000);
     .then(xmlText => {
         // ✅ Step 1: ensure it's a string
         if (typeof xmlText !== "string") {
-          console.error("❌ Expected XML string but got:", xmlText);
           return [];
         }
       
@@ -443,6 +449,9 @@ export function Transactionlog({ email, password }) {
       log.getElementsByTagNameNS("*", "AmountUsed")[0]?.textContent || 0
     ),
 
+    ticket_id:
+      log.getElementsByTagNameNS("*", "TicketId")[0]?.textContent,
+
     // optional extras (future-proof)
     plane_name:
       log.getElementsByTagNameNS("*", "planeName")[0]?.textContent,
@@ -574,13 +583,13 @@ export function ticket_select() {
 }
 
 // MaintenanceCheck 
-export function MaintenanceCheck(formData) {
+export function MaintenanceCheck(datacheck) {
   const payloadMaintenance = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 	<soap:Body>
 		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MaintenenceCheck" xmlns:ns2="http://www.permatabank.com/Maintenance">
 			<ns2:MaintenanceCheckRq>
-				<ns2:LogCheck>${formData.datacheck}</ns2:LogCheck>
+				<ns2:LogCheck>${datacheck}</ns2:LogCheck>
 			</ns2:MaintenanceCheckRq>
 		</ns1:start>
 	</soap:Body>

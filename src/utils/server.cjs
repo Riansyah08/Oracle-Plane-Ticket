@@ -24,9 +24,13 @@ const app = express();
 const PORT = 3001;
 
 app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET"],
-  allowedHeaders: ["Content-Type"]
+  origin: [
+    "http://localhost:5173",
+    "http://10.252.158.86:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
 /* Plane Log */
