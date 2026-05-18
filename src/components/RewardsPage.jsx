@@ -141,7 +141,7 @@ useEffect(() => {
 
         <div className="space-y-4 max-h-178 overflow-y-auto pr-2">
           {allItems.map(item => (
-            <div key={item.item_id} className="border rounded-lg p-5">
+            <div key={String(item.item_id)} className="border rounded-lg p-5">
               <div className="flex justify-between">
                 <div>
                   <p className="font-bold text-lg">{item.name}</p>

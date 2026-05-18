@@ -129,21 +129,25 @@ function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, s
   };
 
   /* ---------------- Seat Checker ---------------- */
-  useEffect(() => {
-    const loadTickets = async () => {
-      try {
-        setLoading(true);
-        const tickets = await ticket_select();
-        setAllTickets(tickets);
-      } catch (err) {
-        console.error('Failed to load Ticket Data', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadTickets = async () => {
+    try {
+      const res = await fetch(BASE_URL + "/api/ticketinfo");
 
+      console.log("Status:", res.status);
+
+      if (!res.ok) throw new Error("Failed");
+
+      const data = await res.json();
+
+      setAllTickets(data);
+    } catch (err) {
+      console.error("Failed to load Ticket Data:", err);
+    }
+  };
+
+  useEffect(() => {
     loadTickets();
-  }, []);
+  }, [refreshKey]);
 
 const refreshLatestUser = async (
   email,
@@ -260,11 +264,6 @@ useEffect(() => {
         departureDate: parsed.departureDate,
         arrivalDate: parsed.arrivalDate
       });
-
-      const tickets = await ticket_select();
-      setAllTickets(tickets);
-
-      await loadFlights();
 
       setRefreshKey(prev => prev + 1);
 
@@ -536,8 +535,6 @@ useEffect(() => {
                       departureDate,
                       arrivalDate
                     });
-
-                    await loadFlights();
                                     
                     // force seat grid to remount
                     setRefreshKey(prev => prev + 1);
@@ -545,10 +542,6 @@ useEffect(() => {
                     // reset UI
                     setSelectedSeat(null);
                     setShowSeatPicker(false);
-                  
-                    // OPTIONAL: re-fetch tickets so seats become taken
-                    const tickets = await ticket_select();
-                    setAllTickets(tickets);
                   }}
                   className="px-6 py-2 rounded bg-green-600 text-white font-semibold disabled:opacity-50"
                 >

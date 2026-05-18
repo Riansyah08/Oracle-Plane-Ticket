@@ -73,7 +73,7 @@ const formatDescription = (desc) => {
           Transaction History
         </h2>
 
-        <div className="space-y-4 max-h-220 overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-192 overflow-y-auto pr-2">
           {sortedTransactions.length === 0 && (
             <p className="text-gray-500 text-center">
               No transactions found

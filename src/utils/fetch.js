@@ -8,7 +8,7 @@ const TRANSACTIONLOG_URL = "/Ticket/init/Service/BPM/Biz/UserTicketDisplayBizSer
 const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizService";
 const ITEMLIST_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
 const Plansesch_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
-const Ticketsearch_URL = "/Ticket/init/Service/BPM/Biz/TicketInfoBizService";
+const Ticketsearch_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/TicketInfoBizService";
 const Changepassword_URL = "/Ticket/init/Service/BPM/Biz/UserChangePWBizService";
 const Maintenance_URL = "/Ticket/init/Service/BPM/Biz/MaintenanceCheckBizService";
 
@@ -125,12 +125,6 @@ export function Register(formData) {
         // If you expect an XML response, you would process it here
         return response.text(); // Get the response body as text
     })
-    .then(xmlText => {
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
-    })
 }
 
 /*====== Change Password ======*/
@@ -168,12 +162,6 @@ export function Changepassword(formData){
         }
       
         return text;
-    })
-    .then(xmlText => {
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
     })
     .catch(error => {
         // Handle network errors or errors from the .then blocks
@@ -226,16 +214,11 @@ const randomNumber = Math.floor(10000 + Math.random() * 90000);
         const text = await response.text();
       
         if (!text || text.trim() === "") {
-          throw new Error("Empty SOAP response");
+          console.warn("Empty SOAP response, assuming success");
+          return true;
         }
       
         return text;
-    })
-    .then(xmlText => {
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
     })
     .catch(error => {
         // Handle network errors or errors from the .then blocks
@@ -292,10 +275,6 @@ const randomNumber = Math.floor(10000 + Math.random() * 90000);
           console.error("❌ Empty XML response");
           return [];
         }
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
     })
     .catch(error => {
         // Handle network errors or errors from the .then blocks
