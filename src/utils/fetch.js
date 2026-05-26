@@ -1,5 +1,5 @@
 import { DOMParser } from "xmldom";
-const HOST = "10.252.158.86";
+const HOST = "10.143.191.86";
 const PORT = "15103";
 const BASE_URL = `http://${HOST}:${PORT}`;
 const LOGIN_URL = "/Ticket/init/Service/BPM/Biz/UserLoginBizService";
@@ -436,7 +436,10 @@ export function Transactionlog({ email, password }) {
       log.getElementsByTagNameNS("*", "planeName")[0]?.textContent,
 
     item_name:
-      log.getElementsByTagNameNS("*", "ItemName")[0]?.textContent
+      log.getElementsByTagNameNS("*", "ItemName")[0]?.textContent,
+
+    transaction_status:
+      log.getElementsByTagNameNS("*", "TransactionStatus")[0]?.textContent
   }));
 });
 }

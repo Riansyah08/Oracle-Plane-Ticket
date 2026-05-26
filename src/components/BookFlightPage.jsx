@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { purchasePlane } from '../utils/fetch.js';
 import {discount} from '../utils/helpers.js';
-import { ticket_select } from '../utils/fetch.js';
 import { loginUser } from '../utils/fetch.js';
 import spinner from "../assets/icons8-spinner-50.gif";
 
@@ -29,7 +28,7 @@ function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, s
     filteredFlights,
     hasSearched
   } = flightSearchState;
-  const HOST = "10.252.158.86";
+  const HOST = "10.143.191.86";
   const PORT = "3001";
   const BASE_URL = `http://${HOST}:${PORT}`;
 
@@ -404,7 +403,7 @@ useEffect(() => {
                     </p>
 
                     <p className="text-gray-600">
-                      Flight: {flight.flightNumber} | Aircraft: {flight.planeName}
+                      Flight: {flight.flightNumber} | Aircraft: {flight.planeName} ({flight.plane_id})
                     </p>
 
                     <p className="text-gray-600">
@@ -467,7 +466,7 @@ useEffect(() => {
               </h3>
 
               <p className="text-gray-600 mb-4">
-                {selectedFlight.planeAddressFrom} → {selectedFlight.planeAddressTo}
+                {selectedFlight.planeAddressFrom} → {selectedFlight.planeAddressTo} | {selectedFlight.planeName} ({selectedFlight.plane_id})
               </p>
 
               {/* Seat grid */}

@@ -12,7 +12,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/Ticket': {
-        target: 'http://10.252.158.86:15103', // ⚠ use IPv4, not ::1
+        target: 'http://10.143.191.86:15103', // ⚠ use IPv4, not ::1
         changeOrigin: true,
         secure: false,
       }

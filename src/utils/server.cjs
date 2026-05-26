@@ -17,7 +17,7 @@ const item_select =
 
 const ticket_select = 
   fetchModule.ticket_select ||
-  fetchModule.default
+  fetchModule.default || 
   fetchModule;
 
 const app = express();
@@ -26,7 +26,7 @@ const PORT = 3001;
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "http://10.252.158.86:5173"
+    "http://10.143.191.86:5173"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -189,7 +189,7 @@ function getLatestXMLItem(log) {
   const blocks = extractBlocksItem(log);
 
   if (blocks.length === 0) {
-    console.log("❌ No parsed blocks found");
+    console.log("❌ No parsed item blocks found");
     return null;
   }
 
@@ -311,7 +311,7 @@ function getLatestXMLTicket(log) {
   const blocks = extractBlocksTicket(log);
 
   if (blocks.length === 0) {
-    console.log("❌ No parsed blocks found");
+    console.log("❌ No parsed ticket blocks found");
     return null;
   }
 
@@ -479,7 +479,7 @@ if (!xmlString) {
 const clean = cleanXMLTicket(xmlString);
 const data = parseTicketXML(clean);
 
-console.log("✅ PARSED Items:", data.length);
+console.log("✅ PARSED Ticket:", data.length);
 
 if (data.length === 0) {
   console.log("⚠️ Empty → SOAP fallback");
