@@ -8,9 +8,11 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    host: true,
+    port: 5173,
     proxy: {
-      '/soa-infra': {
-        target: 'http://10.65.255.49:7003', // ⚠ use IPv4, not ::1
+      '/Ticket': {
+        target: 'http://10.143.191.86:15103', // ⚠ use IPv4, not ::1
         changeOrigin: true,
         secure: false,
       }

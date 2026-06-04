@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User, ShoppingCart, Award, History } from 'lucide-react';
 import { getTierColor } from '../utils/helpers';
 

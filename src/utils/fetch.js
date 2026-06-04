@@ -1,62 +1,54 @@
-const BPM_URL = "/soa-infra/services/default/BpmProject/MainProccess.service";
-const ITEMLIST_URL = "/soa-infra/services/default/BpmProject/SelectTransaction.service";
-const Plansesch_URL = "/soa-infra/services/default/BpmProject/PlaneSchedule.service"
-const Ticketsearch_URL = "/soa-infra/services/default/BpmProject/PlaneSeatDataNoRq.service"
+import { DOMParser } from "xmldom";
+const HOST = "10.143.191.86";
+const PORT = "15103";
+const BASE_URL = `http://${HOST}:${PORT}`;
+const LOGIN_URL = "/Ticket/init/Service/BPM/Biz/UserLoginBizService";
+const REGIST_URL = "/Ticket/init/Service/BPM/Biz/UserAccRegistBizService";
+const TRANSACTIONLOG_URL = "/Ticket/init/Service/BPM/Biz/UserTicketDisplayBizService";
+const TRANSACTION_URL = "/Ticket/init/Service/BPM/Biz/TicketBuynPointRedeemBizService";
+const ITEMLIST_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/ItemInfoCoherenceBizService";
+const Plansesch_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/PlaneScheduleCoherenceBizService";
+const Ticketsearch_URL = BASE_URL + "/Ticket/init/Service/BPM/Biz/TicketInfoBizService";
+const Changepassword_URL = "/Ticket/init/Service/BPM/Biz/UserChangePWBizService";
+const Maintenance_URL = "/Ticket/init/Service/BPM/Biz/MaintenanceCheckBizService";
 
 // Login logic payload fetching 
 export function loginUser(formData) {
   const payloadlogin = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-<soap:Body>  
-  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
-    <Status_Code></Status_Code>
-    <ns2:TransactionLogDisplayRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-    </ns2:TransactionLogDisplayRq>
-    <ns2:UserInsertRq>
-    <ns2:FullName></ns2:FullName>
-      <ns2:PasswordHash></ns2:PasswordHash>
-      <ns2:PhoneNum></ns2:PhoneNum>
-      <ns2:PointsBalance>0</ns2:PointsBalance>
-      <ns2:Email></ns2:Email>
-      <ns2:TierID>T1</ns2:TierID>
-      <ns2:KmHit>0</ns2:KmHit>
-    </ns2:UserInsertRq>
-    <ns2:PointRedeemRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:ItemId></ns2:ItemId>
-      <ns2:Amount></ns2:Amount>
-    </ns2:PointRedeemRq>
-    <ns2:UserInformationRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:planeAddressFrom></ns2:planeAddressFrom>
-      <ns2:planeAddressTo></ns2:planeAddressTo>
-      <ns2:planeSeat></ns2:planeSeat>
-    </ns2:UserInformationRq>
-    <user_options>Login</user_options>
-     <ns2:UserSelectRq>
-      <ns2:Email>${formData.email}</ns2:Email>
-      <ns2:PasswordHash>${formData.password}</ns2:PasswordHash>
-    </ns2:UserSelectRq>
-  </ns1:start>
-</soap:Body>
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/UserLoginProcess" xmlns:ns2="http://www.permatabank.com/UserSystem">
+			<ns2:UserSelectRq>
+				<ns2:Email>${formData.email}</ns2:Email>
+				<ns2:PasswordHash>${formData.password}</ns2:PasswordHash>
+			</ns2:UserSelectRq>
+		</ns1:start>
+	</soap:Body>
 </soap:Envelope>
 `;
 
-return fetch(BPM_URL, {
+return fetch(LOGIN_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/xml; charset=utf-8",
-    "Accept": "text/xml",
-    "SOAPAction": "start"
+    "Content-Type": "text/xml",
+    "Accept": "text/xml"
   },
   body: payloadlogin
 })
-    .then(res => res.text()) // 🔥 ALWAYS read body
+    .then(async (res) => {
+      console.log("HTTP STATUS:", res.status);
+
+      const xmlText = await res.text();
+
+      return {
+        status: res.status,
+        xmlText
+      };
+    })
     .then(xmlText => {
+      return xmlText;
+    })// 🔥 IMPORTANT
+    .then(({ status, xmlText }) => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
@@ -64,18 +56,18 @@ return fetch(BPM_URL, {
         xmlDoc.getElementsByTagNameNS("*", "UserSelectRs")[0];
 
       if (!userNode) {
-        throw new Error("Invalid SOAP response");
+        const error = new Error("Invalid SOAP response");
+        error.status = status;
+        throw error;
       }
 
       const statusCode =
-  userNode.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
-
-if (statusCode !== "00") {
-  const statusDesc =
-    userNode.getElementsByTagNameNS("*", "StatusDesc")[0]?.textContent;
-  throw new Error(statusDesc || "Login failed");
-}
-
+        userNode.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
+      if (statusCode !== "00") {
+        const statusDesc =
+          userNode.getElementsByTagNameNS("*", "StatusDesc")[0]?.textContent;
+          throw new Error(statusDesc || "Login failed");
+      }
       // ✅ SUCCESS
       return {
         user_id: userNode.getElementsByTagNameNS("*", "UserAccID")[0]?.textContent,
@@ -101,51 +93,27 @@ if (statusCode !== "00") {
 export function Register(formData) {
   const payloadRegis = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-<soap:Body>  
-  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
-    <Status_Code></Status_Code>
-    <ns2:TransactionLogDisplayRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-    </ns2:TransactionLogDisplayRq>
-    <ns2:UserInsertRq>
-    <ns2:FullName>${formData.full_name}</ns2:FullName>
-      <ns2:PasswordHash>${formData.password}</ns2:PasswordHash>
-      <ns2:PhoneNum>${formData.phone_number}</ns2:PhoneNum>
-      <ns2:PointsBalance>0</ns2:PointsBalance>
-      <ns2:Email>${formData.email}</ns2:Email>
-      <ns2:TierID>T1</ns2:TierID>
-      <ns2:KmHit>0</ns2:KmHit>
-    </ns2:UserInsertRq>
-    <ns2:PointRedeemRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:ItemId></ns2:ItemId>
-      <ns2:Amount></ns2:Amount>
-    </ns2:PointRedeemRq>
-    <ns2:UserInformationRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:planeAddressFrom></ns2:planeAddressFrom>
-      <ns2:planeAddressTo></ns2:planeAddressTo>
-      <ns2:planeSeat></ns2:planeSeat>
-    </ns2:UserInformationRq>
-    <user_options>Account</user_options>
-     <ns2:UserSelectRq>
-      <ns2:Email></ns2:Email>
-      <ns2:PasswordHash></ns2:PasswordHash>
-    </ns2:UserSelectRq>
-    </ns1:start>
-</soap:Body>
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/UserAccountRegisProcess" xmlns:ns2="http://www.permatabank.com/UserSystem">
+			<ns2:UserInsertRq>
+				<ns2:FullName>${formData.full_name}</ns2:FullName>
+				<ns2:PasswordHash>${formData.password}</ns2:PasswordHash>
+				<ns2:PhoneNum>${formData.phone_number}</ns2:PhoneNum>
+				<ns2:PointsBalance>0</ns2:PointsBalance>
+				<ns2:Email>${formData.email}</ns2:Email>
+				<ns2:TierID>T1</ns2:TierID>
+				<ns2:KmHit>0</ns2:KmHit>
+			</ns2:UserInsertRq>
+		</ns1:start>
+	</soap:Body>
 </soap:Envelope>
 `;
 
-  return fetch(BPM_URL, {
+  return fetch(REGIST_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/xml; charset=utf-8",
-    "Accept": "text/xml",
-    "SOAPAction": "start"
+    "Content-Type": "text/xml",
+    "Accept": "text/xml"
   },
     body: payloadRegis
       })
@@ -157,13 +125,43 @@ export function Register(formData) {
         // If you expect an XML response, you would process it here
         return response.text(); // Get the response body as text
     })
-    .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
+}
+
+/*====== Change Password ======*/
+export function Changepassword(formData){
+  const payloadChangepass = `
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/Process1" xmlns:ns2="http://www.permatabank.com/System02">
+			<ns2:PasswordChngRq>
+				<ns2:UserAccID></ns2:UserAccID>
+				<ns2:Email>${formData.email}</ns2:Email>
+				<ns2:Password>${formData.Password}</ns2:Password>
+			</ns2:PasswordChngRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
+`;
+  return fetch(Changepassword_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml",
+      "Accept": "text/xml"
+    },
+    body: payloadChangepass
+  })
+    .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      
+        const text = await response.text();
+      
+        if (!text || text.trim() === "") {
+          throw new Error("Empty SOAP response");
+        }
+      
+        return text;
     })
     .catch(error => {
         // Handle network errors or errors from the .then blocks
@@ -173,73 +171,54 @@ export function Register(formData) {
 
 /* ================= PURCHASE ITEM ================= */
 export function purchaseItem(newTransaction) {
-  console.log("newTransaction:", newTransaction);
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const payloadItems = `
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
-    <Status_Code></Status_Code>
-    <ns2:TransactionLogDisplayRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-    </ns2:TransactionLogDisplayRq>
-    <ns2:UserInsertRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:FullName></ns2:FullName>
-      <ns2:PasswordHash></ns2:PasswordHash>
-      <ns2:PhoneNum></ns2:PhoneNum>
-      <ns2:PointsBalance></ns2:PointsBalance>
-      <ns2:Email></ns2:Email>
-      <ns2:TierID></ns2:TierID>
-      <ns2:KmHit></ns2:KmHit>
-    </ns2:UserInsertRq>
-    <ns2:PointRedeemRq>
-        <ns2:Email>${newTransaction.email}</ns2:Email>
-        <ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
-        <ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
-        <ns2:Amount>${newTransaction.amount}</ns2:Amount>
-    </ns2:PointRedeemRq>
-    <ns2:UserInformationRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:planeAddressFrom></ns2:planeAddressFrom>
-      <ns2:planeAddressTo></ns2:planeAddressTo>
-      <ns2:planeSeat></ns2:planeSeat>
-    </ns2:UserInformationRq>
-    <user_options>Redeem</user_options>
-     <ns2:UserSelectRq>
-      <ns2:Email></ns2:Email>
-      <ns2:PasswordHash></ns2:PasswordHash>
-    </ns2:UserSelectRq>
-    </ns1:start>
-  </soap:Body>
-  </soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/TransactionflowProcess" xmlns:ns2="http://www.permatabank.com/Coherence">
+			<ns2:TicketBuywithCohRq>
+				<ns2:TraceNumber/>
+				<ns2:Email/>
+				<ns2:PasswordHash/>
+				<ns2:planeAddressFrom/>
+				<ns2:planeAddressTo/>
+				<ns2:planeSeat/>
+				<ns2:DepartureDate/>
+				<ns2:ArrivalDate/>
+			</ns2:TicketBuywithCohRq>
+			<ns2:PointRedeemwithCohRq>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
+				<ns2:Email>${newTransaction.email}</ns2:Email>
+				<ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
+				<ns2:ItemId>${newTransaction.itemId}</ns2:ItemId>
+				<ns2:Amount>${newTransaction.amount}</ns2:Amount>
+			</ns2:PointRedeemwithCohRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
 `;
 
-  return fetch(BPM_URL, {
+  return fetch(TRANSACTION_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/xml; charset=utf-8",
-    "Accept": "text/xml",
-    "SOAPAction": "start"
+    "Content-Type": "text/xml",
+    "Accept": "text/xml"
   },  
     body: payloadItems
   })
-        .then(response => {
+    .then(async (response) => {
         if (!response.ok) {
-            // Handle HTTP errors
-            throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        // If you expect an XML response, you would process it here
-        return response.text(); // Get the response body as text
-    })
-    .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
+      
+        const text = await response.text();
+      
+        if (!text || text.trim() === "") {
+          console.warn("Empty SOAP response, assuming success");
+          return true;
+        }
+      
+        return text;
     })
     .catch(error => {
         // Handle network errors or errors from the .then blocks
@@ -249,65 +228,53 @@ export function purchaseItem(newTransaction) {
 
 /* ================= PURCHASE PLANE ================= */
 export function purchasePlane(newTransaction) {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const payloadPlane = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-<soap:Body>
-  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
-    <Status_Code></Status_Code>
-    <ns2:TransactionLogDisplayRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-    </ns2:TransactionLogDisplayRq>
-    <ns2:UserInsertRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:FullName></ns2:FullName>
-      <ns2:PasswordHash></ns2:PasswordHash>
-      <ns2:PhoneNum></ns2:PhoneNum>
-      <ns2:PointsBalance></ns2:PointsBalance>
-      <ns2:Email></ns2:Email>
-      <ns2:TierID></ns2:TierID>
-      <ns2:KmHit></ns2:KmHit>
-    </ns2:UserInsertRq>
-    <ns2:PointRedeemRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:ItemId></ns2:ItemId>
-      <ns2:Amount></ns2:Amount>
-    </ns2:PointRedeemRq>
-    <ns2:UserInformationRq>
-      <ns2:Email>${newTransaction.email}</ns2:Email>
-      <ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
-      <ns2:planeId>${newTransaction.planeId}</ns2:planeId>
-      <ns2:planeAddressFrom>${newTransaction.planeAddressFrom}</ns2:planeAddressFrom>
-      <ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>
-      <ns2:planeSeat>${newTransaction.planeSeat}</ns2:planeSeat>
-    </ns2:UserInformationRq>
-    <user_options>Purchase</user_options>
-     <ns2:UserSelectRq>
-      <ns2:Email></ns2:Email>
-      <ns2:PasswordHash></ns2:PasswordHash>
-    </ns2:UserSelectRq>
-    </ns1:start>
-</soap:Body>
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/TransactionflowProcess" xmlns:ns2="http://www.permatabank.com/Coherence">
+			<ns2:TicketBuywithCohRq>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
+				<ns2:Email>${newTransaction.email}</ns2:Email>
+				<ns2:PasswordHash>${newTransaction.password}</ns2:PasswordHash>
+				<ns2:planeAddressFrom>${newTransaction.planeAddressFrom}</ns2:planeAddressFrom>
+				<ns2:planeAddressTo>${newTransaction.planeAddressTo}</ns2:planeAddressTo>        
+        <ns2:planeId>${newTransaction.planeId}</ns2:planeId>
+				<ns2:planeSeat>${newTransaction.planeSeat}</ns2:planeSeat>
+				<ns2:DepartureDate>${newTransaction.DepartureDate}</ns2:DepartureDate>
+				<ns2:ArrivalDate>${newTransaction.ArrivalDate}</ns2:ArrivalDate>
+			</ns2:TicketBuywithCohRq>
+			<ns2:PointRedeemwithCohRq>
+				<ns2:TraceNumber/>
+				<ns2:Email/>
+				<ns2:PasswordHash/>
+				<ns2:ItemId/>
+				<ns2:Amount/>
+			</ns2:PointRedeemwithCohRq>
+		</ns1:start>
+	</soap:Body>
 </soap:Envelope>
 `;
 
-  return fetch(BPM_URL, {
+  return fetch(TRANSACTION_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/xml; charset=utf-8",
-    "Accept": "text/xml",
-    "SOAPAction": "start"
+    "Content-Type": "text/xml",
+    "Accept": "text/xml"
   },
     body: payloadPlane
  })
     .then(xmlText => {
-        // Process the XML response text
-        console.log('Success (XML response text):', xmlText);
-        // If you need to work with the XML structure, parse it using DOMParser
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        console.log('Parsed XML Document:', xmlDoc);
+        // ✅ Step 1: ensure it's a string
+        if (typeof xmlText !== "string") {
+          return [];
+        }
+      
+        // ✅ Step 2: check empty
+        if (xmlText.trim() === "") {
+          console.error("❌ Empty XML response");
+          return [];
+        }
     })
     .catch(error => {
         // Handle network errors or errors from the .then blocks
@@ -315,136 +282,103 @@ export function purchasePlane(newTransaction) {
     });
 }
 
-/* ================= TRANSACTION LOG ================= */
-export function PlaneSearch() {
+/* ================= PLANE SCHEDULES ================= */
+export async function PlaneSearch(planepload) {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const payloadSearch = `
-    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-      <soap:Body>
-        <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSchedule"
-            xmlns:ns2="http://www.permatabank.com/UserSystem">
-          <ns2:PlaneScheduleRq></ns2:PlaneScheduleRq>
-        </ns1:start>
-      </soap:Body>
-    </soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/UserPlaneinfoProcess" xmlns:ns2="http://www.permatabank.com/Coherence">
+			<ns2:PlaneScheduleRq>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
+				<ns2:Reload>N</ns2:Reload>
+			</ns2:PlaneScheduleRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
   `;
 
-  return fetch(Plansesch_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/xml; charset=utf-8",
-      Accept: "text/xml",
-      SOAPAction: "start"
-    },
-    body: payloadSearch
-  })
-    .then(res => res.text())
-    .then(xmlText => {
-      console.log('RAW XML:', xmlText);
-        
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        
-      // 1️⃣ Find PlaneScheduleRs (this EXISTS)
-      const scheduleRs =
-        xmlDoc.getElementsByTagName("PlaneScheduleRs")[0];
-        
-      if (!scheduleRs) {
-        console.error('PlaneScheduleRs not found');
-        return [];
-      }
-    
-      // 2️⃣ Get Planeschedule nodes (one or many)
+  try {
+    /* ================= SOAP CALL ================= */
+    const res = await fetch(Plansesch_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/xml",
+        Accept: "text/xml"
+      },
+      body: payloadSearch
+    });
+
+    const xmlText = await res.text();
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+    const scheduleRs =
+      xmlDoc.getElementsByTagName("PlaneScheduleRs")[0];
+
+    let soapPlanes = [];
+
+    if (scheduleRs) {
       const planes =
         scheduleRs.getElementsByTagName("Planeschedule");
-    
-      if (!planes || planes.length === 0) {
-        console.error('No Planeschedule nodes found');
-        return [];
-      }
-    
-      // 3️⃣ Map planes
-      return Array.from(planes).map(plane => ({
+
+      soapPlanes = Array.from(planes).map(plane => ({
         plane_id:
           plane.getElementsByTagName("planeId")[0]?.textContent ?? "",
-      
         planeName:
           plane.getElementsByTagName("planeName")[0]?.textContent ?? "",
-      
         flightNumber:
           plane.getElementsByTagName("flightNumber")[0]?.textContent ?? "",
-      
         planeAddressFrom:
           plane.getElementsByTagName("planeAddressFrom")[0]?.textContent ?? "",
-      
         planeAddressTo:
           plane.getElementsByTagName("planeAddressTo")[0]?.textContent ?? "",
-      
         planeschedule_departs:
           plane.getElementsByTagName("planeScheduleDeparts")[0]?.textContent ?? "",
-      
         planeschedule_arrive:
           plane.getElementsByTagName("planeScheduleArrive")[0]?.textContent ?? "",
-      
+        total_seat:
+          plane.getElementsByTagName("TotalSeat")[0]?.textContent ?? "",
+        availability:
+          plane.getElementsByTagName("Availability")[0]?.textContent ?? "",
         km: Number(
           plane.getElementsByTagName("km")[0]?.textContent ?? 0
         ),
-      
         price: Number(
           plane.getElementsByTagName("price")[0]?.textContent ?? 0
         )
       }));
-    });
+    }
+
+    return soapPlanes;
+
+  } catch (err) {
+    console.error("PlaneSearch failed:", err);
+    return [];
+  }
 }
 
 /* ================= TRANSACTION LOG ================= */
 export function Transactionlog({ email, password }) {
   const payloadLog = `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-<soap:Body>  
-  <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MainProccess" xmlns:ns2="http://www.permatabank.com/UserSystem">
-    <Status_Code></Status_Code>
-    <ns2:TransactionLogDisplayRq>
-      <ns2:Email>${email}</ns2:Email>
-      <ns2:PasswordHash>${password}</ns2:PasswordHash>
-    </ns2:TransactionLogDisplayRq>
-    <ns2:UserInsertRq>
-    <ns2:FullName></ns2:FullName>
-      <ns2:PasswordHash></ns2:PasswordHash>
-      <ns2:PhoneNum></ns2:PhoneNum>
-      <ns2:PointsBalance></ns2:PointsBalance>
-      <ns2:Email></ns2:Email>
-      <ns2:TierID></ns2:TierID>
-      <ns2:KmHit></ns2:KmHit>
-    </ns2:UserInsertRq>
-    <ns2:PointRedeemRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:ItemId></ns2:ItemId>
-      <ns2:Amount></ns2:Amount>
-    </ns2:PointRedeemRq>
-    <ns2:UserInformationRq>
-      <ns2:UserAccID></ns2:UserAccID>
-      <ns2:Email></ns2:Email>
-      <ns2:planeAddressFrom></ns2:planeAddressFrom>
-      <ns2:planeAddressTo></ns2:planeAddressTo>
-      <ns2:planeSeat></ns2:planeSeat>
-    </ns2:UserInformationRq>
-    <user_options>Log_Display</user_options>
-     <ns2:UserSelectRq>
-      <ns2:Email></ns2:Email>
-      <ns2:PasswordHash></ns2:PasswordHash>
-    </ns2:UserSelectRq>
-    </ns1:start>
-</soap:Body>
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/UserDisplayLogProcess" xmlns:ns2="http://www.permatabank.com/UserSystem">
+			<ns2:TransactionLogDisplayRq>
+				<ns2:Email>${email}</ns2:Email>
+				<ns2:PasswordHash>${password}</ns2:PasswordHash>
+			</ns2:TransactionLogDisplayRq>
+		</ns1:start>
+	</soap:Body>
 </soap:Envelope>
 `;
 
-  return fetch(BPM_URL, {
+  return fetch(TRANSACTIONLOG_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
-      Accept: "text/xml",
-      SOAPAction: "start"
+      "Content-Type": "text/xml",
+      Accept: "text/xml"
     },
     body: payloadLog
   })
@@ -494,18 +428,25 @@ export function Transactionlog({ email, password }) {
       log.getElementsByTagNameNS("*", "AmountUsed")[0]?.textContent || 0
     ),
 
+    ticket_id:
+      log.getElementsByTagNameNS("*", "TicketId")[0]?.textContent,
+
     // optional extras (future-proof)
     plane_name:
       log.getElementsByTagNameNS("*", "planeName")[0]?.textContent,
 
     item_name:
-      log.getElementsByTagNameNS("*", "ItemName")[0]?.textContent
+      log.getElementsByTagNameNS("*", "ItemName")[0]?.textContent,
+
+    transaction_status:
+      log.getElementsByTagNameNS("*", "TransactionStatus")[0]?.textContent
   }));
 });
 }
 
 // utils/fetch.js
 export function item_select() {
+const randomNumber = Math.floor(10000 + Math.random() * 90000);
   const mapTier = (tier) => {
   if (!tier) return null;
   switch (tier.trim()) {
@@ -521,24 +462,22 @@ export function item_select() {
 };
 
   const payload = `
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/SelectTransaction" xmlns:ns2="http://www.permatabank.com/Updatetiersschema">
-        <ns2:PurchaseRq>
-          <ns2:UserAccID/>
-          <ns2:Email/>
-          <ns2:ItemID/>
-          <ns2:ItemCount/>
-        </ns2:PurchaseRq>
-      </ns1:start>
-    </soap:Body>
-  </soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/ItemCoherenceList" xmlns:ns2="http://www.permatabank.com/Coherence">
+			<ns2:ItemRq>
+				<ns2:TraceNumber>${randomNumber}</ns2:TraceNumber>
+				<ns2:Reload>N</ns2:Reload>
+			</ns2:ItemRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
 `;
 
   return fetch(ITEMLIST_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
+      "Content-Type": "text/xml",
       Accept: "text/xml"
     },
     body: payload
@@ -561,7 +500,10 @@ export function item_select() {
         ),
         tier: mapTier(
           item.getElementsByTagNameNS("*", "minTier")[0]?.textContent || 0
-        )  
+        ),
+        stock: mapTier(
+          item.getElementsByTagNameNS("*", "itemStock")[0]?.textContent || 0
+        )    
       }));
     });
 }
@@ -569,17 +511,24 @@ export function item_select() {
 /* ================= TICKET SELECT ================= */
 export function ticket_select() {
   const payload = `
-  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-      <ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/PlaneSeatDataNoRq"/>
-    </soap:Body>
-  </soap:Envelope>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/TicketInfoCoherence" xmlns:ns2="http://www.permatabank.com/UserSystem">
+			<ns2:TicketInfoRq>
+				<ns2:UserAccID/>
+				<ns2:planeId/>
+				<ns2:planeSeat/>
+				<ns2:flightNumber/>
+			</ns2:TicketInfoRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
 `;
 
   return fetch(Ticketsearch_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
+      "Content-Type": "text/xml",
       Accept: "text/xml"
     },
     body: payload
@@ -588,17 +537,13 @@ export function ticket_select() {
     .then(xmlText => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
       const items = Array.from(
-        xmlDoc.getElementsByTagNameNS("*", "PlaneToUser")
+        xmlDoc.getElementsByTagNameNS("*", "TicketList")
       );
 
       return items.map(item => ({
-        userId: Number(
-          item.getElementsByTagNameNS("*", "userId")[0]?.textContent
-        ),
         planeId: Number(
-          item.getElementsByTagNameNS("*", "planeId")[0]?.textContent
+          item.getElementsByTagNameNS("*", "planeName")[0]?.textContent
         ),
         planeSeat: Number(
           item.getElementsByTagNameNS("*", "planeSeat")[0]?.textContent
@@ -608,7 +553,68 @@ export function ticket_select() {
         ),
         pairId: Number(
           item.getElementsByTagNameNS("*", "pairid")[0]?.textContent || 0
+        ),
+        departure_Date: Number(
+          item.getElementsByTagNameNS("*", "planeScheduleDeparts")[0]?.textContent
+        ),
+        arrival_Date: Number(
+          item.getElementsByTagNameNS("*", "planeScheduleArrive")[0]?.textContent
         )  
       }));
+    });
+}
+
+// MaintenanceCheck 
+export function MaintenanceCheck(datacheck) {
+  const payloadMaintenance = `
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<ns1:start xmlns:ns1="http://xmlns.oracle.com/bpmn/bpmnProcess/MaintenenceCheck" xmlns:ns2="http://www.permatabank.com/Maintenance">
+			<ns2:MaintenanceCheckRq>
+				<ns2:LogCheck>${datacheck}</ns2:LogCheck>
+			</ns2:MaintenanceCheckRq>
+		</ns1:start>
+	</soap:Body>
+</soap:Envelope>
+`;
+
+return fetch(Maintenance_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/xml",
+    "Accept": "text/xml"
+  },
+  body: payloadMaintenance
+})
+    .then(res => {
+      console.log("HTTP STATUS:", res.status);
+      return res.text(); // ✅ THIS WAS MISSING
+    })
+    .then(xmlText => {
+      return xmlText;
+    })// 🔥 IMPORTANT
+    .then(xmlText => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+      const userNode =
+        xmlDoc.getElementsByTagNameNS("*", "MaintenanceCheckRs")[0];
+
+      if (!userNode) {
+        throw new Error("Invalid SOAP response");
+      }
+
+      const statusCode =
+        userNode.getElementsByTagNameNS("*", "StatusCode")[0]?.textContent;
+      if (statusCode !== "00") {
+        const statusDesc =
+          userNode.getElementsByTagNameNS("*", "StatusDesc")[0]?.textContent;
+          throw new Error(statusDesc || "Login failed");
+      }
+      // ✅ SUCCESS
+      return {
+        log_check: userNode.getElementsByTagNameNS("*", "LogCheck")[0]?.textContent,
+        availability: userNode.getElementsByTagNameNS("*", "Availability")[0]?.textContent
+      };
     });
 }
