@@ -10,9 +10,15 @@ import spinner from "./assets/icons8-spinner-50.gif";
 
 function App({}) {
   const [currentPage, setCurrentPage] = useState(() => {
-    const storedUser = localStorage.getItem("user");
+    const savedPage = localStorage.getItem("currentPage");
+    const hasUser = localStorage.getItem("user");
 
-    return storedUser ? "home" : "purchase";
+    // Don't restore login page after refresh
+    if (savedPage === "login") {
+      return hasUser ? "home" : "purchase";
+    }
+
+    return savedPage || (hasUser ? "home" : "purchase");
   });
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -26,6 +32,12 @@ function App({}) {
   
   const IDLE_TIME = 30 * 60 * 1000;
   const timeoutRef = useRef(null);
+
+useEffect(() => {
+  if (currentPage !== "login") {
+    localStorage.setItem("currentPage", currentPage);
+  }
+}, [currentPage]);
 
   const resetTimer = () => {
     // Save last activity
@@ -144,6 +156,8 @@ const lastActivity = localStorage.getItem("lastActivity");
     setTransactions([]);
     localStorage.removeItem("user");
     localStorage.removeItem("lastActivity");
+    localStorage.removeItem("currentPage");
+    setCurrentPage("purchase");
   };
 
   /* ================= USER UPDATE ================= */
@@ -166,35 +180,29 @@ const [flightSearchState, setFlightSearchState] = useState({
 });
 
   /* ================= ROUTING ================= */
-  if (currentPage === "login" && isLoginMaintenance) {
-      if (checkingMaintenance) {
-        return (
-          <div className="flex items-center justify-center h-screen">
-            <img src={spinner} alt="Loading..." />
+  const publicPages = ["purchase", "redeem"];
+
+  if (!currentUser && !publicPages.includes(currentPage)) {
+    if (isLoginMaintenance) {
+      return (
+        <div className="h-screen flex items-center justify-center bg-indigo-200">
+          <div className="bg-white p-10 rounded-xl shadow-xl text-center">
+            <h1 className="text-3xl font-bold mb-4">
+              System Under Maintenance
+            </h1>
+
+            <p className="text-gray-600">
+              Please try again later.
+            </p>
           </div>
-        )
-      }
-
-    return (
-      <div className="h-screen flex items-center justify-center bg-indigo-200">
-        <div className="bg-white p-10 rounded-xl shadow-xl text-center">
-          <h1 className="text-3xl font-bold mb-4">
-            System Under Maintenance
-          </h1>
-
-          <p className="text-gray-600">
-            Please try again later.
-          </p>
         </div>
-      </div>
-    );
-  }
-  
-  if (currentPage === "login") {
-    return <LoginPage onLogin={handleLogin} />;
-  } 
+      );
+    }
 
-  if (!currentUser && currentPage !== "purchase" && currentPage !== "redeem") {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  if (!currentUser && !publicPages.includes(currentPage)) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
@@ -224,7 +232,7 @@ const [flightSearchState, setFlightSearchState] = useState({
 
   return (
     <div className="h-screen flex flex-col bg-indigo-200 overflow-hidden">
-      <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} user={currentUser}/>
+      <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} user={currentUser} currentPage={currentPage}/>
 
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-4">

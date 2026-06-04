@@ -13,31 +13,23 @@ function RewardsPage({ user, onNavigate, setCurrentUser }) {
   const PORT = "3001";
   const BASE_URL = `http://${HOST}:${PORT}`;
 
+const loadItems = async () => {
+  try {
+    const res = await fetch(BASE_URL + "/api/items");
+
+    if (!res.ok) throw new Error("Failed");
+
+    const data = await res.json();
+
+    setAllItems(data);
+  } catch (err) {
+    console.error("❌ ERROR:", err);
+  }
+};
+
 useEffect(() => {
-  const loadItems = async () => {
-    try {
-      const res = await fetch(BASE_URL + "/api/items");
-
-      if (!res.ok) throw new Error("Failed");
-
-      const data = await res.json();
-      if (!data || data.length === 0) {
-        setCurrentUser(null);
-        localStorage.removeItem("user");
-        localStorage.removeItem("lastActivity");
-        
-        alert("Redeem Points Page is in Maintenance Right Now");
-        return;
-      }
-
-      setAllItems(data);
-    } catch (err) {
-      console.error("❌ ERROR:", err);
-    }
-  };
-
   loadItems();
-}, [refreshKey]); // only for items
+}, [refreshKey]);
 
 const waitForUpdatedUser = async (email, password, oldPoints) => {
   for (let i = 0; i < 5; i++) {
@@ -141,6 +133,7 @@ useEffect(() => {
 
         <div className="space-y-4 max-h-178 overflow-y-auto pr-2">
           {allItems.map((item, index) => (
+            item.stock > 0 && (
             <div key={item.item_id ?? `${item.name}-${index}`} className="border rounded-lg p-5">
               <div className="flex justify-between">
                 <div>
@@ -178,6 +171,7 @@ useEffect(() => {
                 </button>
               </div>
             </div>
+            )
           ))}
 
           {allItems.length === 0 && (
