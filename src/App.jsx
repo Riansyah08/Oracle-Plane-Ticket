@@ -7,6 +7,7 @@ import TransactionsPage from "./components/TransactionsPage";
 import Navbar from "./components/Navbar";
 import { MaintenanceCheck, Transactionlog } from "./utils/fetch";
 import spinner from "./assets/icons8-spinner-50.gif";
+import { Toaster } from "sonner";
 
 function App({}) {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -232,6 +233,7 @@ const [flightSearchState, setFlightSearchState] = useState({
 
   return (
     <div className="h-screen flex flex-col bg-indigo-200 overflow-hidden">
+      <Toaster position="top-right" richColors /> 
       <Navbar onNavigate={setCurrentPage} onLogout={handleLogout} user={currentUser} currentPage={currentPage}/>
 
       <div className="flex-1 overflow-y-auto">

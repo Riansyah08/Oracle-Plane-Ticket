@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Plane, LogIn, KeyRound, User } from "lucide-react";
 import { Register, loginUser, Changepassword } from "../utils/fetch";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { toast } from "sonner";
 
 function LoginPage({ onLogin }) {
   const [view, setView] = useState("login");        // ✅ replaces isLogin
@@ -50,7 +51,7 @@ function LoginPage({ onLogin }) {
         setIsMaintenance(true);
         return;
       } else {
-        alert("Login failed");
+        toast.error("Login failed");
       }
     } finally {
       setLoading(false);
