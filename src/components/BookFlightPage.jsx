@@ -472,24 +472,24 @@ useEffect(() => {
               </div>
             </div>
             )}
-        
-        {NotificationLogin && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
-              <p className="text-gray-800 mb-4">{NotificationMsg}</p>
-            <button
-            onClick={() => {onNavigate("Login");setNotificationLogin("")}}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg"
-            >
-              OK;
-          </button>
-              </div>
-            </div>
-            )}
 
         {showSeatPicker && selectedFlight && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
+              {/*Seat picker Login notification ah moment*/}
+                  {NotificationLogin && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50">
+                      <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+                        <p className="text-gray-800 mb-4">{NotificationLogin}</p>
+                      <button
+                      onClick={() => {onNavigate("Login")}}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+                      >
+                        OK;
+                      </button>
+                  </div>
+                </div>
+                )}
 
               <h3 className="text-xl font-bold mb-4">
                 Select Seat
@@ -553,8 +553,7 @@ useEffect(() => {
                         })
                       );
 
-                      setNotificationMsg("Please Login first!");
-                      onNavigate("login");
+                      setNotificationLogin("Please Login first!");
                       return;
                     }
 
