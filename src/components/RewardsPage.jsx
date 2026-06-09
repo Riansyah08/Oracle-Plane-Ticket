@@ -8,6 +8,7 @@ function RewardsPage({ user, onNavigate, setCurrentUser }) {
   const [allItems, setAllItems] = useState([]);
   const [hasAutoRedeemed, setHasAutoRedeemed] = useState(false);
   const [NotificationMsg, setNotificationMsg] = useState(false);
+  const [NotificationLogin, setNotificationLogin] = useState(false);
   /* ---------------- Load ALL Items (once) ---------------- */
   const [refreshKey, setRefreshKey] = useState(0);
   const HOST = "10.143.191.86";
@@ -148,19 +149,35 @@ useEffect(() => {
                   <p>Item Remaining: {item.stock}</p>
                 </div>
                 
-          {NotificationMsg && (
-            <div className="fixed inset-0 flex items-center justify-center z-50">
-              <div className="bg-white border-1 rounded-xl shadow p-6 w-80 text-center ">
-                <p className="text-gray-800 mb-4">{NotificationMsg}</p>
-              <button
-              onClick={() => setNotificationMsg("")}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg"
-              >
-                OK
-            </button>
+                {NotificationMsg && (
+                  <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="bg-white border-1 rounded-xl shadow p-6 w-80 text-center ">
+                      <p className="text-gray-800 mb-4">{NotificationMsg}</p>
+                    <button
+                    onClick={() => setNotificationMsg("")}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+                    >
+                      OK
+                  </button>
+                      </div>
+                    </div>
+                )}
+
+                {/*Seat picker Login notification ah moment*/}
+                  {NotificationLogin && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50">
+                      <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+                        <p className="text-gray-800 mb-4">{NotificationLogin}</p>
+                      <button
+                      onClick={() => {onNavigate("Login")}}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+                      >
+                        OK
+                      </button>
+                  </div>
                 </div>
-              </div>
-              )}
+                )}
+
                 <button
                   onClick={async () => {
                   if (!user?.user_id) {
@@ -171,8 +188,7 @@ useEffect(() => {
                         item
                       })
                     );
-                    setNotificationMsg("Please login first");
-                    onNavigate("login");
+                    setNotificationLogin("Please login first");
                     return;
                   }
                   
