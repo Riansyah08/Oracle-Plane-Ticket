@@ -9,6 +9,7 @@ function LoginPage({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false); // ✅ added
   const [isMaintenance, setIsMaintenance] = useState(false); // ✅ added
+  const [NotificationMsg, setNotificationMsg] = useState(false)
 
   const [formData, setFormData] = useState({
     email: "",
@@ -29,7 +30,7 @@ function LoginPage({ onLogin }) {
       });
 
       if (!user?.user_id) {
-        alert("User not found");
+        setNotificationMsg("User not found");
         window.location.reload();
         return;
       }
@@ -50,7 +51,7 @@ function LoginPage({ onLogin }) {
         setIsMaintenance(true);
         return;
       } else {
-        alert("Login failed");
+        setNotificationMsg("Login failed");
       }
     } finally {
       setLoading(false);
@@ -62,11 +63,11 @@ function LoginPage({ onLogin }) {
     setLoading(true);
     try {
       await Register(formData);
-      alert("Registration successful. Please login.");
+      setNotificationMsg("Registration successful. Please login.");
       setView("login");
     } catch (err) {
       console.error(err);
-      alert("Registration failed");
+      setNotificationMsg("Registration failed");
     } finally {
       setLoading(false);
     }
@@ -74,9 +75,9 @@ function LoginPage({ onLogin }) {
 
   /* ================= CHANGE PASSWORD ================= */
   const handleChangePassword = async () => {
-    if (!formData.email) { alert("Please enter your account email."); return; }
-    if (!formData.password) { alert("Please enter a new password."); return; }
-    if (formData.password !== formData.confirmPassword) { alert("Passwords do not match."); return; }
+    if (!formData.email) { setNotificationMsg("Please enter your account email."); return; }
+    if (!formData.password) { setNotificationMsg("Please enter a new password."); return; }
+    if (formData.password !== formData.confirmPassword) { setNotificationMsg("Passwords do not match."); return; }
     setLoading(true);
     try {
       await Changepassword({
@@ -84,11 +85,11 @@ function LoginPage({ onLogin }) {
         Password: formData.password,
         Password2: formData.confirmPassword,
       });
-      alert("Password change requested. Waiting Approval.");
+      setNotificationMsg("Password change requested. Waiting Approval.");
       setView("login");
     } catch (err) {
       console.error(err);
-      alert("Failed to change password");
+      setNotificationMsg("Failed to change password");
     } finally {
       setLoading(false);
     }
@@ -128,7 +129,21 @@ function LoginPage({ onLogin }) {
           <Plane className="w-12 h-12 text-blue-600 mr-3" />
           <h1 className="text-3xl font-bold text-gray-800">OSky</h1>
         </div>
-    
+
+        {NotificationMsg && (
+              <div className="fixed inset-0 flex items-center justify-center z-50">
+                <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+                <p className="text-gray-800 mb-4">{NotificationMsg}</p>
+              <button
+                onClick={() => setNotificationMsg("")}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
+
         {view !== "changePassword" && (
           <div className="flex mb-6 gap-0.5 bg-gray-100 rounded-lg p-1">
             <button
@@ -169,6 +184,20 @@ function LoginPage({ onLogin }) {
               <LogIn className="w-5 h-5 mr-2" />
               {loading ? "Logging in..." : "Login"}
             </button>
+
+            {NotificationMsg && (
+              <div className="fixed inset-0 flex items-center justify-center z-50">
+                <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+                <p className="text-gray-800 mb-4">{NotificationMsg}</p>
+              <button
+                onClick={() => setNotificationMsg("")}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* 👇 Add this here */}
             <div className="text-center mt-3">

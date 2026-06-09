@@ -7,6 +7,7 @@ import { loginUser } from "../utils/fetch";
 function RewardsPage({ user, onNavigate, setCurrentUser }) {
   const [allItems, setAllItems] = useState([]);
   const [hasAutoRedeemed, setHasAutoRedeemed] = useState(false);
+  const [NotificationMsg, setNotificationMsg] = useState(false);
   /* ---------------- Load ALL Items (once) ---------------- */
   const [refreshKey, setRefreshKey] = useState(0);
   const HOST = "10.143.191.86";
@@ -57,7 +58,7 @@ const handleRedeemItem = async (item) => {
     const tierOrder = ["Silver", "Gold", "Platinum"];
 
     if (oldPoints < item.price) {
-      alert("Insufficient points!");
+      setNotificationMsg("Insufficient points!");
       return;
     }
 
@@ -65,7 +66,7 @@ const handleRedeemItem = async (item) => {
       tierOrder.indexOf(latestUser.tier_name) <
       tierOrder.indexOf(item.minTier)
     ) {
-      alert(`Requires ${item.minTier} tier`);
+      setNotificationMsg(`Requires ${item.minTier} tier`);
       return;
     }
 
@@ -90,11 +91,11 @@ const handleRedeemItem = async (item) => {
 
     // 🔥 STEP 4: refresh items
     setRefreshKey(prev => prev + 1);
-    alert(`${item.name} redeemed successfully!`);
+    setNotificationMsg(`${item.name} redeemed successfully!`);
 
   } catch (err) {
     console.error(err);
-    alert("Failed or delayed. Try again.");
+    setNotificationMsg("Failed or delayed. Try again.");
   }
 };
 
@@ -116,7 +117,7 @@ useEffect(() => {
   autoRedeem();
 }, [user]);
 
-  return (
+  return (    
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold mb-4 flex items-center">
@@ -131,6 +132,7 @@ useEffect(() => {
           </span>
         </p>
 
+        
         <div className="space-y-4 max-h-178 overflow-y-auto pr-2">
           {allItems.map((item, index) => (
             item.stock > 0 && (
@@ -146,6 +148,19 @@ useEffect(() => {
                   <p>Item Remaining: {item.stock}</p>
                 </div>
                 
+          {NotificationMsg && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="bg-white border-1 rounded-xl shadow p-6 w-80 text-center ">
+                <p className="text-gray-800 mb-4">{NotificationMsg}</p>
+              <button
+              onClick={() => setNotificationMsg("")}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+              >
+                OK
+            </button>
+                </div>
+              </div>
+              )}
                 <button
                   onClick={async () => {
                   if (!user?.user_id) {
@@ -156,7 +171,7 @@ useEffect(() => {
                         item
                       })
                     );
-                    alert("Please login first");
+                    setNotificationMsg("Please login first");
                     onNavigate("login");
                     return;
                   }

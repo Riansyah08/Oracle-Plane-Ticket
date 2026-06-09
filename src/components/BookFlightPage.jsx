@@ -21,6 +21,8 @@ function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, s
   const [refreshKey, setRefreshKey] = useState(0);
   const [arrivalDate, setArrivalDate] = useState("");
   const [isRefreshingUser, setIsRefreshingUser] = useState(false);
+  const [NotificationMsg, setNotificationMsg] = useState(false);
+  const [NotificationLogin, setNotificationLogin] = useState(false);
   const {
     selectedFrom,
     selectedTo,
@@ -112,12 +114,12 @@ function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, s
   
   const handleSearchFlights = () => {
     if (!selectedFrom || !selectedTo) {
-        alert('Please select both cities');
+        setNotificationMsg('Please select both cities');
         return;
       }
 
       if (!departureDate) {
-        alert("Choose The Date First!!");
+        setNotificationMsg("Choose The Date First!!");
         return;
       }
 
@@ -229,10 +231,10 @@ useEffect(() => {
         setCurrentUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
       }
-      alert(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
+      setNotificationMsg(`✈️ Flight purchased successfully! Seat ${tx.seat} with a total price of ${tx.price * (1 - discount(user.tier_name))}`);
     } catch (err) {
       console.error(err);
-      alert('❌ Failed to purchase flight.');
+      setNotificationMsg('❌ Failed to purchase flight.');
     } finally {
       setLoading(false);
     }
@@ -355,7 +357,7 @@ useEffect(() => {
           
         {/* Date Picker */}
         <div className="flex gap-6 mb-6">
-
+        
           {/* Departure grid */}
           <div>
             <label className="block text-sm font-semibold mb-1">
@@ -457,6 +459,34 @@ useEffect(() => {
           </p>
         )}
 
+        {NotificationMsg && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+              <p className="text-gray-800 mb-4">{NotificationMsg}</p>
+            <button
+            onClick={() => setNotificationMsg("")}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+            >
+              OK
+          </button>
+              </div>
+            </div>
+            )}
+        
+        {NotificationLogin && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+              <p className="text-gray-800 mb-4">{NotificationMsg}</p>
+            <button
+            onClick={() => {onNavigate("Login");setNotificationLogin("")}}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+            >
+              OK;
+          </button>
+              </div>
+            </div>
+            )}
+
         {showSeatPicker && selectedFlight && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
@@ -497,8 +527,8 @@ useEffect(() => {
                     </button>
                   );
                 })}
-              </div>
-              
+              </div>  
+
               {/* Actions */}
               <div className="flex justify-end gap-3">
                 <button
@@ -522,7 +552,8 @@ useEffect(() => {
                           arrivalDate
                         })
                       );
-                      alert("Please Login first!");
+
+                      setNotificationMsg("Please Login first!");
                       onNavigate("login");
                       return;
                     }
