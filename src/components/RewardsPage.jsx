@@ -1,8 +1,8 @@
 import { React, useState, useEffect } from "react";
 import { Award } from "lucide-react";
 import { getTierColor,getbuttoncolour } from "../utils/helpers";
-import { purchaseItem } from "../utils/fetch";
-import { loginUser } from "../utils/fetch";
+import { purchaseItem } from "../utils/fetchclient";
+import { loginUser } from "../utils/fetchclient";
 
 function RewardsPage({ user, onNavigate, setCurrentUser }) {
   const [allItems, setAllItems] = useState([]);
@@ -11,8 +11,8 @@ function RewardsPage({ user, onNavigate, setCurrentUser }) {
   const [NotificationLogin, setNotificationLogin] = useState(false);
   /* ---------------- Load ALL Items (once) ---------------- */
   const [refreshKey, setRefreshKey] = useState(0);
-  const HOST = "10.143.191.86";
-  const PORT = "3001";
+  const HOST = import.meta.env.VITE_HOST;
+  const PORT = import.meta.env.PORT || 3001;
   const BASE_URL = `http://${HOST}:${PORT}`;
 
 const loadItems = async () => {

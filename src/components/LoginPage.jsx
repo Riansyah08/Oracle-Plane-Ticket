@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plane, LogIn, KeyRound, User } from "lucide-react";
-import { Register, loginUser, Changepassword } from "../utils/fetch";
+import { Register, loginUser, Changepassword } from "../utils/fetchclient";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 function LoginPage({ onLogin }) {

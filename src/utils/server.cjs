@@ -2,7 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const { DOMParser } = require("xmldom");
-
+require('dotenv').config();
 const fetchModule = require("./fetch");
 
 const PlaneSearch =
@@ -21,12 +21,14 @@ const ticket_select =
   fetchModule;
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+const HOST = process.env.VITE_HOST;
+const FRONTEND_PORT = process.env.FRONTEND_PORT || 5173;
 
 app.use(cors({
   origin: [
-    "http://localhost:5173",
-    "http://10.143.191.86:5173"
+    `http://localhost:${FRONTEND_PORT}`,
+    `http://${HOST}:${FRONTEND_PORT}`
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
-import { Transactionlog } from "../utils/fetch";
+import { Transactionlog } from "../utils/fetchclient";
 
 function TransactionsPage({ user, rewardItems }) {
   const [transactions, setTransactions] = useState([]);

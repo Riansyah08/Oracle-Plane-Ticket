@@ -5,7 +5,7 @@ import BookFlightPage from "./components/BookFlightPage";
 import RewardsPage from "./components/RewardsPage";
 import TransactionsPage from "./components/TransactionsPage";
 import Navbar from "./components/Navbar";
-import { MaintenanceCheck, Transactionlog } from "./utils/fetch";
+import { MaintenanceCheck, Transactionlog } from "./utils/fetchclient";
 import spinner from "./assets/icons8-spinner-50.gif";
 
 function App({}) {
@@ -129,6 +129,7 @@ const lastActivity = localStorage.getItem("lastActivity");
         }
       } catch (err) {
         console.error("Maintenance check failed:", err);
+        setIsLoginMaintenance(true);
       } finally {
         setCheckingMaintenance(false);
       }

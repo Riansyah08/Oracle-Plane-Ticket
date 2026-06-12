@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import { purchasePlane } from '../utils/fetch.js';
+import { purchasePlane } from '../utils/fetchclient.js';
 import {discount} from '../utils/helpers.js';
-import { loginUser } from '../utils/fetch.js';
+import { loginUser } from '../utils/fetchclient.js';
 import spinner from "../assets/icons8-spinner-50.gif";
 
 function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, setFlightSearchState }) {
@@ -30,8 +30,8 @@ function BookFlightPage({ onNavigate, user, setCurrentUser, flightSearchState, s
     filteredFlights,
     hasSearched
   } = flightSearchState;
-  const HOST = "10.143.191.86";
-  const PORT = "3001";
+  const HOST = import.meta.env.VITE_HOST;
+  const PORT = import.meta.env.PORT || 3001;
   const BASE_URL = `http://${HOST}:${PORT}`;
 
   /* ---------------- Helpers ---------------- */
