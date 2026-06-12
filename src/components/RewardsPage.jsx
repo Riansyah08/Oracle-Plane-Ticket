@@ -166,7 +166,7 @@ useEffect(() => {
                 {/*Seat picker Login notification ah moment*/}
                   {NotificationLogin && (
                     <div className="fixed inset-0 flex items-center justify-center z-50">
-                      <div className="bg-white border-1 rounded-xl shadow-2xl p-6 w-80 text-center ">
+                      <div className="bg-white border-1 rounded-xl shadow-md p-6 w-80 text-center ">
                         <p className="text-gray-800 mb-4">{NotificationLogin}</p>
                       <button
                       onClick={() => {onNavigate("Login")}}
